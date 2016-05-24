@@ -175,11 +175,6 @@ def fill_template(tmpl, ctx):
 def build_file(top, path, ctx, template_path):
     root, ext = os.path.splitext(path)
 
-    # get/create output path
-    relpath = os.path.relpath(root + ".html", top)
-    out_path = os.path.join(top, ctx["OutputDir"], relpath)
-    os.makedirs(os.path.dirname(out_path), exist_ok=True)
-
     out_dict = {}
     compile_against_master = False
     if ext.lower() == ".md" or ext.lower() == ".md+":
@@ -211,6 +206,9 @@ def build_file(top, path, ctx, template_path):
     elif ext.lower() == ".tmpl":
         out_dict = {}
     else:  # copy file
+        relpath = os.path.relpath(path, top)
+        out_path = os.path.join(top, ctx["OutputDir"], relpath)
+        os.makedirs(os.path.dirname(out_path), exist_ok=True)
         shutil.copyfile(path, out_path)
         out_dict = {}
 
@@ -223,8 +221,12 @@ def build_file(top, path, ctx, template_path):
         ctx["content"] = local_out_html
         out_html = fill_template(master_tmpl, ctx)
 
+        relpath = os.path.relpath(root + ".html", top)
+        out_path = os.path.join(top, ctx["OutputDir"], relpath)
+        os.makedirs(os.path.dirname(out_path), exist_ok=True)
         # create output file in output folder
         with open(out_path, "w") as f:
+            # get/create output path
             f.write(out_html)
 
     return out_dict
