@@ -1,5 +1,7 @@
 import markdown
 import os
+import argparse
+import json
 from html import escape as escape_HTML
 
 # compile markdown to HTML, returning (html, meta_info) tuple
@@ -200,7 +202,7 @@ def build_file(top, path, ctx, template_path):
         return {}
     
     # get master template
-    master_tmpl_path = os.path.join(top, ctx["TemplateDir"], "master.tmpl")
+    master_tmpl_path = os.path.join(top, ctx["MetaDir"], "master.tmpl")
     master_tmpl = get_template(master_tmpl_path)
 
     # fill master template
@@ -244,9 +246,9 @@ def build_dir(top, path, ctx, template_path=None):
     return tree
 
 def load_meta(top, ctx):
-    meta_path = os.path.join(top, "meta.md")
+    meta_path = os.path.join(top, ctx["MetaDir"], "meta.json")
     if os.path.isfile(meta_path):
-        _, meta = compile_markdown(open(meta_path, "r").read())
+        meta = json.loads(open(meta_path, "r").read())
         for key in meta:
             ctx[key] = meta[key]
     return ctx
@@ -254,7 +256,7 @@ def load_meta(top, ctx):
 def register_macros(top, ctx):
     def macro(s, fun):
         ctx[s] = fun
-    pgm_path = os.path.join(top, "macros.py")
+    pgm_path = os.path.join(top, ctx["MetaDir"], "macros.py")
     if os.path.isfile(pgm_path):
         pgm = open(pgm_path, "r").read()
         exec(pgm)
@@ -265,5 +267,8 @@ def build_site(top, ctx):
     ctx = register_macros(top, ctx)
     build_dir(top, top, ctx)
 
-default_meta = {"OutputDir": "output/", "TemplateDir": "templates/"}
+if __name__ == "__main__":
+    
+
+default_meta = {"OutputDir": "output/", "MetaDir": "meta/"}
 build_site("testsite/", default_meta)
