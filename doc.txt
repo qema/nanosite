@@ -14,12 +14,15 @@ Template language (given context ctx).
 
 
 Site generation.
-- nanosite traverses SiteDir and its subdirectories, creating corresponding built files in respective paths in OutputDir.
-- Each file gets a context with a view of its subdirectory tree (not including the other files in its current directory), with names in lowercase and with file extensions removed.
-- .md files are converted to an (html, meta) tuple. This is compiled against the shallowest template.tmpl template in a parent folder (if it exists), with {"Content": html, "Meta": meta} appended to the context. Then the output is passed as {"Content": output} to fill the master template. This is saved as the output file. Finally, its entry in the context directory tree becomes {"Content": html, "Meta": meta} where html is the original compiled Markdown.
-- .md+ files are filled according to their context before following the standard .md procedure.
-- .html+ files are filled according to their context, then compiled against the shallowest template.tmpl template in a parent folder (if it exists), with {"Content": html} appended to the context. Then the output is passed as {"Content": output} to fill the master template. This is saved as the output file. Finally, its entry in the context directory tree becomes {"Content": html} where html is the output after the local template but before the master template.
+1. Create a context with meta.md and macros.py
+  - meta.md meta [key: value] pairs will be directly added to the context
+  - macros.py is executed. The function [macro(s, fun)] is exposed, where [s] is the name of the context key that will invoke the macro, and [fun] is a lambda expression [lambda: ctx = ...] that takes in context [ctx] and outputs any stringable value. When the macro is invoked through {{key}}, the lambda expression is called with the current file's context as the parameter. These macros are all added to the context.
+2. Traverse SiteDir and its subdirectories, creating corresponding built files in respective paths in OutputDir.
+  - Each file gets a context with a view of its subdirectory tree (not including the other files in its current directory), with names in lowercase and with file extensions removed.
+  - .md files are converted to an (html, meta) tuple. This is compiled against the shallowest template.tmpl template in a parent folder (if it exists), with {"Content": html, "Meta": meta} appended to the context. Then the output is passed as {"Content": output} to fill the master template. This is saved as the output file. Finally, its entry in the context directory tree becomes {"Content": html, "Meta": meta} where html is the original compiled Markdown.
+  - .md+ files are filled according to their context before following the standard .md procedure.
+  - .html+ files are filled according to their context, then compiled against the shallowest template.tmpl template in a parent folder (if it exists), with {"Content": html} appended to the context. Then the output is passed as {"Content": output} to fill the master template. This is saved as the output file. Finally, its entry in the context directory tree becomes {"Content": html} where html is the output after the local template but before the master template.
 
 
-Reserved context keywords.
-- Content, Meta, SiteDir, TemplateDir, OutputDir
+Reserved context keywords. Directories cannot be named as these keywords, since their context entry would conflict.
+- content, meta, SiteDir, TemplateDir, OutputDir

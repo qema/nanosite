@@ -4,10 +4,13 @@ from html import escape as escape_HTML
 
 # compile markdown to HTML, returning (html, meta_info) tuple
 def compile_markdown(md_text):
-    md = markdown.Markdown(extensions = ["markdown.extensions.meta"])
+    md = markdown.Markdown(extensions=["markdown.extensions.meta"])
     html = md.convert(md_text)
-    meta = {k: "".join(v) for k, v in md.Meta.items()} \
+    try:
+        meta = {k: "".join(v) for k, v in md.Meta.items()} \
            if md.Meta is not None else {}
+    except AttributeError:
+        meta = {}
     return (html, meta)
         
 # fetch key, possibly nested thru dot notation
@@ -16,7 +19,10 @@ def ctx_fetch(ctx, key):
     if len(parts) == 1:
         if parts[0] not in ctx:
             raise Exception("Key not in context: '" + parts[0] + "'")
-        return ctx[parts[0]]
+        value = ctx[parts[0]]
+        if callable(value):  # if it's a macro, call it with parameter [ctx]
+            value = value(ctx)
+        return value
     else:
         return ctx_fetch(ctx[parts[0]], parts[1])
 
@@ -214,7 +220,26 @@ def build_dir(top, path, ctx, template_path=None):
 
     return tree
 
+def load_meta(top, ctx):
+    meta_path = os.path.join(top, "meta.md")
+    if os.path.isfile(meta_path):
+        _, meta = compile_markdown(open(meta_path, "r").read())
+        for key in meta:
+            ctx[key] = meta[key]
+    return ctx
+    
+def register_macros(top, ctx):
+    def macro(s, fun):
+        ctx[s] = fun
+    pgm_path = os.path.join(top, "macros.py")
+    if os.path.isfile(pgm_path):
+        pgm = open(pgm_path, "r").read()
+        exec(pgm)
+    return ctx
+    
 def build_site(top, ctx):
+    ctx = load_meta(top, ctx)
+    ctx = register_macros(top, ctx)
     build_dir(top, top, ctx)
 
 default_meta = {"OutputDir": "output/", "TemplateDir": "templates/"}
