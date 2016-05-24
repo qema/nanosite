@@ -23,6 +23,7 @@ Site generation.
   - .md files are converted to an (html, meta) tuple. This is compiled against the shallowest template.tmpl template in a parent folder (if it exists), with {"Content": html, "Meta": meta} appended to the context. Then the output is passed as {"Content": output} to fill the master template. This is saved as the output file. Finally, its entry in the context directory tree becomes {"Content": html, "Meta": meta} where html is the original compiled Markdown.
   - .md+ files are filled according to their context before following the standard .md procedure.
   - .html+ files are filled according to their context, then compiled against the shallowest template.tmpl template in a parent folder (if it exists), with {"Content": html} appended to the context. Then the output is passed as {"Content": output} to fill the master template. This is saved as the output file. Finally, its entry in the context directory tree becomes {"Content": html} where html is the output after the local template but before the master template.
+  - Other files (besides template files) are copied to their respective output folders. Their content in the context directory tree is empty {}.
 
 
 Reserved context keywords. Directories cannot be named as these keywords, since their context entry would conflict.

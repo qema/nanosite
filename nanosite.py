@@ -1,7 +1,8 @@
 import markdown
 import os
-import argparse
 import json
+import shutil
+import argparse
 from html import escape as escape_HTML
 
 # compile markdown to HTML, returning (html, meta_info) tuple
@@ -173,7 +174,14 @@ def fill_template(tmpl, ctx):
 
 def build_file(top, path, ctx, template_path):
     root, ext = os.path.splitext(path)
+
+    # get/create output path
+    relpath = os.path.relpath(root + ".html", top)
+    out_path = os.path.join(top, ctx["OutputDir"], relpath)
+    os.makedirs(os.path.dirname(out_path), exist_ok=True)
+
     out_dict = {}
+    compile_against_master = False
     if ext.lower() == ".md" or ext.lower() == ".md+":
         html, meta = compile_markdown(open(path, "r").read())
         if ext.lower() == ".md+":
@@ -188,6 +196,7 @@ def build_file(top, path, ctx, template_path):
             local_out_html = fill_template(local_tmpl, ctx)
         else:
             local_out_html = html
+        compile_against_master = True
     elif ext.lower() == ".html+":
         contents = open(path, "r").read()
         local_out_html = fill_template(contents, ctx)
@@ -198,23 +207,25 @@ def build_file(top, path, ctx, template_path):
             local_tmpl = get_template(template_path)
             ctx["content"] = local_out_html
             local_out_html = fill_template(local_tmpl, ctx)
-    else:  # don't process file
-        return {}
-    
-    # get master template
-    master_tmpl_path = os.path.join(top, ctx["MetaDir"], "master.tmpl")
-    master_tmpl = get_template(master_tmpl_path)
+        compile_against_master = True
+    elif ext.lower() == ".tmpl":
+        out_dict = {}
+    else:  # copy file
+        shutil.copyfile(path, out_path)
+        out_dict = {}
 
-    # fill master template
-    ctx["content"] = local_out_html
-    out_html = fill_template(master_tmpl, ctx)
+    if compile_against_master:
+        # get master template
+        master_tmpl_path = os.path.join(top, ctx["MetaDir"], "master.tmpl")
+        master_tmpl = get_template(master_tmpl_path)
 
-    # create output file in output folder
-    relpath = os.path.relpath(root + ".html", top)
-    out_path = os.path.join(top, ctx["OutputDir"], relpath)
-    os.makedirs(os.path.dirname(out_path), exist_ok=True)
-    with open(out_path, "w") as f:
-        f.write(out_html)
+        # fill master template
+        ctx["content"] = local_out_html
+        out_html = fill_template(master_tmpl, ctx)
+
+        # create output file in output folder
+        with open(out_path, "w") as f:
+            f.write(out_html)
 
     return out_dict
 
@@ -231,7 +242,10 @@ def build_dir(top, path, ctx, template_path=None):
             if root.lower() == "template" and ext.lower() == ".tmpl":
                 template_path = subpath
         elif os.path.isdir(subpath):
-            dirs.append((subdir, subpath))
+            rp = os.path.realpath(subpath)
+            if rp != os.path.realpath(os.path.join(top, ctx["MetaDir"])) and \
+               rp != os.path.realpath(os.path.join(top, ctx["OutputDir"])):
+                dirs.append((subdir, subpath))
 
     aug_ctx = dict(ctx)
     for short_path, full_path in dirs:
@@ -267,8 +281,20 @@ def build_site(top, ctx):
     ctx = register_macros(top, ctx)
     build_dir(top, top, ctx)
 
-if __name__ == "__main__":
-    
+def is_in_nanosite_dir(path="."):
+    if os.path.isfile(os.path.join(path, ".nanosite")):
+        return True
+    else:
+        up = os.path.join("..", path)
+        if os.path.realpath(up) == os.path.realpath(path):  # reached root
+            return False
+        else:
+            return is_in_nanosite_dir(up)
 
-default_meta = {"OutputDir": "output/", "MetaDir": "meta/"}
-build_site("testsite/", default_meta)
+parser = argparse.ArgumentParser(prog="nanosite")
+parser.add_argument("dir", nargs="?", default=os.getcwd())
+args = parser.parse_args(["testsite/"])
+
+default_ctx = {"OutputDir": "output/", "MetaDir": "meta/"}
+build_site(args.dir, default_ctx)
+print("Built site.")
