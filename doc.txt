@@ -26,3 +26,25 @@ Site generation.
 
 Reserved context keywords. Directories cannot be named as these keywords, since their context entry would conflict.
 - content, meta, SiteDir, TemplateDir, OutputDir
+
+
+Directory structure.
+site/
+  meta.md
+  macros.py
+  [index.html+]
+  [archive.html+]
+  output/ <- OutputDir
+  templates/ <- TemplateDir
+    master.tmpl
+  [pages]/
+    template.tmpl
+    [Life]/
+      [funstuff.md]
+    [Work]/
+      specialized_template.tmpl
+      [meetings.md]
+  [posts]/
+    template.tmpl
+    [hello.md+]
+    [codesamples.md+]
