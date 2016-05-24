@@ -12,16 +12,38 @@ def compile_markdown(md_text):
     except AttributeError:
         meta = {}
     return (html, meta)
+
+def tokenize_params(params):
+    out = []
+    in_string = False
+    for token in params.split(" "):
+        if token[0] == '"':
+            in_string = True
+            out.append(token[1:])
+        elif in_string:
+            if token[-1] == '"':
+                token = token[:-1]
+                in_string = False
+            out[-1] += " " + token
+        elif token.isdecimal():
+            out.append(int(token))
+        else:
+            try:
+                out.append(float(token))
+            except ValueError:
+                out.append(token)
+    return out
         
 # fetch key, possibly nested thru dot notation
-def ctx_fetch(ctx, key):
+def ctx_fetch(ctx, line):
+    key, params = (line.split(" ", 1) + [""])[:2]
     parts = key.split(".", 1)
     if len(parts) == 1:
         if parts[0] not in ctx:
             raise Exception("Key not in context: '" + parts[0] + "'")
         value = ctx[parts[0]]
         if callable(value):  # if it's a macro, call it with parameter [ctx]
-            value = value(ctx)
+            value = value(ctx, *tokenize_params(params))
         return value
     else:
         return ctx_fetch(ctx[parts[0]], parts[1])
@@ -63,7 +85,8 @@ def fill_template(tmpl, ctx):
         else:
             for_block_accum += cur
         key, rest = get_chunk(rest, "}}")
-        cmd = key.lower().strip().split()
+        key = key.strip()
+        cmd = key.lower().split()
 
         #print("{{", key, "}}", rest, seeking, seek_depth, depth_if)
         #print()

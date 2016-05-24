@@ -2,6 +2,7 @@ nanosite: static site generator
 
 Template language (given context ctx).
 - {{key}}: replaced with ctx["key"], HTML characters escaped
+  - {{key [param1 param2 .. paramN]}}: if ctx["key"] is a function, then it will be called with parameters [ctx], [param1], .. [paramN]. Parsing tries to figure out the appropriate type (supported: string, int, float). Use quotes ('"') around a parameter for strings with spaces.
 - {{{key}}}: replaced with ctx["key"], no escape (i.e. for HTML insertion)
 - {{#for x in key}}: if ctx["key"] is a collection, loop through its items
 - {{#end for}}: end of for loop

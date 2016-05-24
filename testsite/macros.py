@@ -1,2 +1,2 @@
-macro("testmacro", lambda ctx: ctx["testattr"] * 10)
+macro("testmacro", lambda ctx, n: (ctx["testattr"] + " ") * n)
 

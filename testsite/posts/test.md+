@@ -4,4 +4,4 @@ Hello, World!
 {{testattr}}
 
 
-salkfjasklf Macro: {{testmacro}}
+salkfjasklf Macro: {{testmacro 50}}
