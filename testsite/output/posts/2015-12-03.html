@@ -1,0 +1,16 @@
+Master template
+
+----(Title: Shakespeare Social Networks<br>
+
+The content of this post is: [Begin]<p>I used Python, <a href="http://visjs.org">vis.js</a> and the <a href="http://shakespeare.mit.edu">MIT Shakespeare collection</a> to visualize dialogue networks in Shakespeare plays.</p>
+<h2>Method</h2>
+<p>Each vertex represents a character, and the edges connect characters who talk with each other. I did this by taking all the sets of characters on stage between each stage direction, and then merging these sets. This turns out to be a good heuristic because it breaks groups between character entrances and exits, and other stage directions simply cause redundant groups to form which get filtered during merging.</p>
+<p>The edges are modeled as physical springs with vis.js so clusters tend to form based on the emergent "cliques". Finally, the characters are colored in the graph by popularity.</p>
+<p>I'm also posting an interactive version as a page here: <a href="http://wanganzhou.com/shakespeare.html">Dialogue Graphs</a></p>
+<p>Here are the dialogue graphs!</p>
+<h2>Taming of the Shrew</h2>
+<p><img alt="Taming of the Shrew" src="http://wanganzhou.com/images/shakespeare/shrew.png" /></p>
+<h2>Midsummer Night's Dream</h2>
+<p><img alt="Midsummer Night's Dream" src="http://wanganzhou.com/images/shakespeare/midsummer.png" /></p>
+<h2>Hamlet</h2>
+<p><img alt="Hamlet" src="http://wanganzhou.com/images/shakespeare/hamlet.png" /></p>[End])----

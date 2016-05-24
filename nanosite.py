@@ -14,9 +14,22 @@ def compile_markdown(md_text):
 def ctx_fetch(ctx, key):
     parts = key.split(".", 1)
     if len(parts) == 1:
+        if parts[0] not in ctx:
+            raise Exception("Key not in context: '" + parts[0] + "'")
         return ctx[parts[0]]
     else:
         return ctx_fetch(ctx[parts[0]], parts[1])
+
+template_cache = {}
+# get template from path (cached)
+def get_template(path):
+    global template_cache
+    if path in template_cache:
+        return template_cache[path]
+    else:
+        tmpl = open(path, "r").read()
+        template_cache[path] = tmpl
+        return tmpl
 
 # fill template according to rules in doc.txt
 def fill_template(tmpl, ctx):
@@ -121,26 +134,58 @@ def fill_template(tmpl, ctx):
         raise Exception("#if without #endif")
     elif depth_if < 0:
         raise Exception("#endif without #if")
+    if depth_for > 0:
+        raise Exception("#for without #endfor")
+    elif depth_for < 0:
+        raise Exception("#endfor without #for")
     return out
 
 def build_file(top, path, ctx, template_path):
     root, ext = os.path.splitext(path)
-    if ext.lower() == ".md":
+    out_dict = {}
+    if ext.lower() == ".md" or ext.lower() == ".md+":
         html, meta = compile_markdown(open(path, "r").read())
+        if ext.lower() == ".md+":
+            html = fill_template(html, ctx)
+        out_dict = {"content": html, "meta": meta}
 
-        tmpl = open(template_path, "r").read()
-        ctx["Content"] = html
-        ctx["Meta"] = meta
-        out_html = fill_template(tmpl, ctx)
-
-        relpath = os.path.relpath(root + ".html", top)
-        out_path = os.path.join(ctx["OutputDir"], relpath)
-        os.makedirs(os.path.dirname(out_path), exist_ok=True)
-        with open(out_path, "w") as f:
-            f.write(out_html)  # TODO
+        # fill local template
+        if template_path is not None:
+            local_tmpl = get_template(template_path)
+            ctx["content"] = html
+            ctx["meta"] = meta
+            local_out_html = fill_template(local_tmpl, ctx)
+        else:
+            local_out_html = html
     elif ext.lower() == ".html+":
-        pass
-    return "I'M A FILE"
+        contents = open(path, "r").read()
+        local_out_html = fill_template(contents, ctx)
+        out_dict = {"content": local_out_html}
+
+        # fill local template
+        if template_path is not None:
+            local_tmpl = get_template(template_path)
+            ctx["content"] = local_out_html
+            local_out_html = fill_template(local_tmpl, ctx)
+    else:  # don't process file
+        return {}
+    
+    # get master template
+    master_tmpl_path = os.path.join(top, ctx["TemplateDir"], "master.tmpl")
+    master_tmpl = get_template(master_tmpl_path)
+
+    # fill master template
+    ctx["content"] = local_out_html
+    out_html = fill_template(master_tmpl, ctx)
+
+    # create output file in output folder
+    relpath = os.path.relpath(root + ".html", top)
+    out_path = os.path.join(top, ctx["OutputDir"], relpath)
+    os.makedirs(os.path.dirname(out_path), exist_ok=True)
+    with open(out_path, "w") as f:
+        f.write(out_html)
+
+    return out_dict
 
 def build_dir(top, path, ctx, template_path=None):
     files = []
@@ -159,17 +204,18 @@ def build_dir(top, path, ctx, template_path=None):
 
     aug_ctx = dict(ctx)
     for short_path, full_path in dirs:
-        path_name = short_path.capitalize()
+        path_name = short_path.lower()
         tree[path_name] = build_dir(top, full_path, ctx, template_path)
         aug_ctx[path_name] = tree[path_name]
         
     for short_path, full_path in files:
-        tree[short_path] = build_file(top, full_path, aug_ctx, template_path)
+        name = os.path.splitext(short_path)[0].lower()  # remove extension
+        tree[name] = build_file(top, full_path, aug_ctx, template_path)
 
     return tree
 
 def build_site(top, ctx):
     build_dir(top, top, ctx)
 
-default_meta = {"OutputDir": "testsite/output/", "TemplateDir": "templates/"}
+default_meta = {"OutputDir": "output/", "TemplateDir": "templates/"}
 build_site("testsite/", default_meta)

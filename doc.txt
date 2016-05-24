@@ -11,3 +11,15 @@ Template language (given context ctx).
 - {{#end if}}: end of if block
 
 - Keys can be nested with dot notation, e.g. if ctx = {"key": {"a": 3}}, then "key.a" will fetch the value 3
+
+
+Site generation.
+- nanosite traverses SiteDir and its subdirectories, creating corresponding built files in respective paths in OutputDir.
+- Each file gets a context with a view of its subdirectory tree (not including the other files in its current directory), with names in lowercase and with file extensions removed.
+- .md files are converted to an (html, meta) tuple. This is compiled against the shallowest template.tmpl template in a parent folder (if it exists), with {"Content": html, "Meta": meta} appended to the context. Then the output is passed as {"Content": output} to fill the master template. This is saved as the output file. Finally, its entry in the context directory tree becomes {"Content": html, "Meta": meta} where html is the original compiled Markdown.
+- .md+ files are filled according to their context before following the standard .md procedure.
+- .html+ files are filled according to their context, then compiled against the shallowest template.tmpl template in a parent folder (if it exists), with {"Content": html} appended to the context. Then the output is passed as {"Content": output} to fill the master template. This is saved as the output file. Finally, its entry in the context directory tree becomes {"Content": html} where html is the output after the local template but before the master template.
+
+
+Reserved context keywords.
+- Content, Meta, SiteDir, TemplateDir, OutputDir

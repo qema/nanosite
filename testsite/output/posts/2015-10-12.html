@@ -1,0 +1,36 @@
+Master template
+
+----(Title: The Land of Stuff<br>
+
+The content of this post is: [Begin]<p>Here's my first project spotlight. The Land of Stuff is an online role playing game coded in <a href="http://freebasic.net">FreeBASIC</a>. It's about exploring a huge world with friends -- fighting monsters, trading loot, going on quests and battling other players. The server was online from 2009 to 2010.</p>
+<p>I'm releasing it here in two ways.</p>
+<ul>
+<li>You download the full game as-is, <a href="http://wanganzhou.com/downloads/land-of-stuff.zip">here</a>. (Requires Windows)</li>
+<li>I'm also releasing the source code on GitHub, <a href="https://github.com/losmmorpg/land-of-stuff">here</a>. You can customize the game or create your own adventure world.</li>
+</ul>
+<p><img alt="The Land of Stuff" src="http://wanganzhou.com/images/los/people.png" /></p>
+<p>The Land of Stuff is based on a simple C++ text adventure I made called The Adventures of Carl.</p>
+<p><img alt="The Adventures of Carl" src="http://wanganzhou.com/images/los/carl.png" /></p>
+<p>What carried over was the idea of simple mechanics and a focus on exploration.
+Here's the world map of The Land of Stuff:</p>
+<p><img src="http://wanganzhou.com/images/los/map.png" alt="World Map" style="width: 640px;"/></p>
+<p>Here's the Fid City Zoo:</p>
+<p><img alt="Fid City Zoo" src="http://wanganzhou.com/images/los/screen15.png" /></p>
+<p>It also features an extensive (though rudimentary) scripting system for relatively involved quests and NPC (non-player character) interactions. For example, here's a snippet of the Ant Terminator quest:
+<pre><code class="nohighlight">
+AntTerminator:
+  SLAY 05 00
+  IF_AC1
+    SPEECH Are you done yet?
+    REPLY Yep!
+    SPEECH Thank you! Here's 50 dollars.
+    REPLY Yay!
+    MONEY 50
+    MSG You've beat Ant Terminator!
+    AC0
+    GOTO Finished
+  END_IF
+</code></pre>
+It's powerful enough that you can make quests with interesting stories. Yes, there are GOTOs.</p>
+<p>You can check out The Land of Stuff on YouTube: <a href="https://www.youtube.com/playlist?list=PLC03806BA687F460A">Land of Stuff</a>.</p>
+<p>I'm also including a page for the game with info and game guide <a href="http://wanganzhou.com/land-of-stuff.html">here</a>, which you can also get to from the top bar of this website. Happy adventuring!</p>[End])----
