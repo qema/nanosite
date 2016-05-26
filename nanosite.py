@@ -3,6 +3,7 @@ import os
 import json
 import shutil
 import argparse
+import time
 from html import escape as escape_HTML
 
 # compile markdown to HTML, returning (html, meta_info) tuple
@@ -20,36 +21,39 @@ def tokenize_params(params):
     out = []
     in_string = False
     for token in params.split(" "):
-        if token[0] == '"':
-            in_string = True
-            out.append(token[1:])
-        elif in_string:
-            if token[-1] == '"':
-                token = token[:-1]
-                in_string = False
-            out[-1] += " " + token
-        elif token.isdecimal():
-            out.append(int(token))
-        else:
-            try:
-                out.append(float(token))
-            except ValueError:
-                out.append(token)
+        if token != "":
+            if token[0] == '"':
+                in_string = True
+                out.append(token[1:])
+            elif in_string:
+                if token[-1] == '"':
+                    token = token[:-1]
+                    in_string = False
+                out[-1] += " " + token
+            elif token.isdecimal():
+                out.append(int(token))
+            else:
+                try:
+                    out.append(float(token))
+                except ValueError:
+                    out.append(token)
     return out
         
 # fetch key, possibly nested thru dot notation
 def ctx_fetch(ctx, line):
     key, params = (line.split(" ", 1) + [""])[:2]
     parts = key.split(".", 1)
-    if len(parts) == 1:
-        if parts[0] not in ctx:
-            raise Exception("Key not in context: '" + parts[0] + "'")
-        value = ctx[parts[0]]
-        if callable(value):  # if it's a macro, call it with parameter [ctx]
-            value = value(ctx, *tokenize_params(params))
-        return value
+    if parts[0] in ctx:
+        if len(parts) == 1:
+            value = ctx[parts[0]]
+            # if it's a macro, call it with parameter [ctx]
+            if callable(value):
+                value = value(ctx, *tokenize_params(params))
+            return value
+        else:
+            return ctx_fetch(ctx[parts[0]], parts[1])
     else:
-        return ctx_fetch(ctx[parts[0]], parts[1])
+        return None
 
 template_cache = {}
 # get template from path (cached)
@@ -119,6 +123,7 @@ def fill_template(tmpl, ctx):
                 if "#endfor" in seeking and seek_depth == depth_for:
                     seeking = None
                     run_for_block = True
+                depth_for -= 1
                     
             if run_for_block:
                 orig = None
@@ -155,13 +160,16 @@ def fill_template(tmpl, ctx):
                 seeking = {"#endfor"}
                 seek_depth = depth_for
                 for_variable = cmd[1]
-                for_collection = ctx_fetch(ctx, cmd[3])
+                for_collection = ctx_fetch(ctx, " ".join(cmd[3:]))
+            elif cmd[0] == "#endfor":
+                depth_for -= 1
             else:
                 if key[0] == "{":
-                    out += str(ctx_fetch(ctx, key[1:]))
+                    val = str(ctx_fetch(ctx, key[1:]))
                     _, rest = get_chunk(rest, "}") # get matching close brace
                 else:
-                    out += escape_HTML(str(ctx_fetch(ctx, key)))
+                   val = escape_HTML(str(ctx_fetch(ctx, key)))
+                out += fill_template(val, ctx)
     if depth_if > 0:
         raise Exception("#if without #endif")
     elif depth_if < 0:
@@ -172,47 +180,25 @@ def fill_template(tmpl, ctx):
         raise Exception("#endfor without #for")
     return out
 
-def build_file(top, path, ctx, template_path):
+def build_file(top, node, ctx):
+    assert(node["is_file"])
+    
+    path = node["path"]
     root, ext = os.path.splitext(path)
 
-    out_dict = {}
-    compile_against_master = False
-    if ext.lower() == ".md" or ext.lower() == ".md+":
-        html, meta = compile_markdown(open(path, "r").read())
-        if ext.lower() == ".md+":
-            html = fill_template(html, ctx)
-        out_dict = {"content": html, "meta": meta}
+    if ext.lower() in {".md", ".md+", ".html+"}:  # compile against templates
+        # copy all node properties
+        for k in node:
+            ctx[k] = node[k]
 
         # fill local template
+        template_path = node["template_path"]
         if template_path is not None:
             local_tmpl = get_template(template_path)
-            ctx["content"] = html
-            ctx["meta"] = meta
             local_out_html = fill_template(local_tmpl, ctx)
         else:
-            local_out_html = html
-        compile_against_master = True
-    elif ext.lower() == ".html+":
-        contents = open(path, "r").read()
-        local_out_html = fill_template(contents, ctx)
-        out_dict = {"content": local_out_html}
+            local_out_html = node["content"]
 
-        # fill local template
-        if template_path is not None:
-            local_tmpl = get_template(template_path)
-            ctx["content"] = local_out_html
-            local_out_html = fill_template(local_tmpl, ctx)
-        compile_against_master = True
-    elif ext.lower() == ".tmpl":
-        out_dict = {}
-    else:  # copy file
-        relpath = os.path.relpath(path, top)
-        out_path = os.path.join(top, ctx["OutputDir"], relpath)
-        os.makedirs(os.path.dirname(out_path), exist_ok=True)
-        shutil.copyfile(path, out_path)
-        out_dict = {}
-
-    if compile_against_master:
         # get master template
         master_tmpl_path = os.path.join(top, ctx["MetaDir"], "master.tmpl")
         master_tmpl = get_template(master_tmpl_path)
@@ -228,39 +214,86 @@ def build_file(top, path, ctx, template_path):
         with open(out_path, "w") as f:
             # get/create output path
             f.write(out_html)
+    elif ext.lower() == ".tmpl":
+        pass
+    else:   # copy file
+        relpath = os.path.relpath(path, top)
+        out_path = os.path.join(top, ctx["OutputDir"], relpath)
+        os.makedirs(os.path.dirname(out_path), exist_ok=True)
+        shutil.copyfile(path, out_path)
+    
+def add_dirtree_file(top, path, ctx, template_path):
+    root, ext = os.path.splitext(path)
 
+    out_dict = {}
+    if ext.lower() == ".md" or ext.lower() == ".md+":
+        html, meta = compile_markdown(open(path, "r").read())
+        if ext.lower() == ".md+":
+            html = fill_template(html, ctx)
+        out_dict = {"content": html}
+        for k in meta:
+            out_dict[k] = meta[k]
+        
+        #ctx["content"] = html
+        #ctx["meta"] = meta
+    elif ext.lower() == ".html+":
+        contents = open(path, "r").read()
+        #local_out_html = fill_template(contents, ctx)
+        out_dict = {"content": contents}#local_out_html}
+ 
+        #ctx["content"] = local_out_html
+    elif ext.lower() == ".tmpl":
+        out_dict = {}
+    else:  # copy file
+        #relpath = os.path.relpath(path, top)
+        #out_path = os.path.join(top, ctx["OutputDir"], relpath)
+        #os.makedirs(os.path.dirname(out_path), exist_ok=True)
+        #shutil.copyfile(path, out_path)
+        out_dict = {}
+
+    out_dict["is_file"] = True
+    out_dict["path"] = path
+    out_dict["template_path"] = template_path
+    out_dict["date"] = time.localtime(os.path.getctime(path))
     return out_dict
 
-def build_dir(top, path, ctx, template_path=None):
+def make_dirtree(top, path, ctx, template_path=None):
     files = []
     dirs = []
     tree = {}
     for subdir in os.listdir(path):
         subpath = os.path.join(path, subdir)
         if os.path.isfile(subpath):
-            files.append((subdir, subpath))
             # update template path if there is a template in this folder
             root, ext = os.path.splitext(os.path.basename(subpath))
             if root.lower() == "template" and ext.lower() == ".tmpl":
                 template_path = subpath
+            else:
+                files.append((subdir, subpath))
         elif os.path.isdir(subpath):
             rp = os.path.realpath(subpath)
             if rp != os.path.realpath(os.path.join(top, ctx["MetaDir"])) and \
                rp != os.path.realpath(os.path.join(top, ctx["OutputDir"])):
                 dirs.append((subdir, subpath))
 
-    aug_ctx = dict(ctx)
     for short_path, full_path in dirs:
         path_name = short_path.lower()
-        tree[path_name] = build_dir(top, full_path, ctx, template_path)
-        aug_ctx[path_name] = tree[path_name]
+        tree[path_name] = make_dirtree(top, full_path, ctx, template_path)
         
     for short_path, full_path in files:
         name = os.path.splitext(short_path)[0].lower()  # remove extension
-        tree[name] = build_file(top, full_path, aug_ctx, template_path)
+        tree[name] = add_dirtree_file(top, full_path, ctx, template_path)
 
     return tree
 
+# traverse tree to build all site files
+def build_dirtree(top, tree, ctx):
+    for k, node in tree.items():
+        if "is_file" in node and node["is_file"]:
+            build_file(top, node, ctx)
+        else:
+            build_dirtree(top, node, ctx)
+            
 def load_meta(top, ctx):
     meta_path = os.path.join(top, ctx["MetaDir"], "meta.json")
     if os.path.isfile(meta_path):
@@ -275,13 +308,19 @@ def register_macros(top, ctx):
     pgm_path = os.path.join(top, ctx["MetaDir"], "macros.py")
     if os.path.isfile(pgm_path):
         pgm = open(pgm_path, "r").read()
-        exec(pgm)
+        exec(pgm, dict(list(globals().items()) + list(locals().items())))
     return ctx
     
-def build_site(top, ctx):
+def make_site(top, ctx):
     ctx = load_meta(top, ctx)
     ctx = register_macros(top, ctx)
-    build_dir(top, top, ctx)
+    tree = make_dirtree(top, top, ctx)
+    
+    # copy dirtree to context
+    for k in tree:
+        ctx[k] = tree[k]
+        
+    build_dirtree(top, tree, ctx)
 
 def is_in_nanosite_dir(path="."):
     if os.path.isfile(os.path.join(path, ".nanosite")):
@@ -295,8 +334,8 @@ def is_in_nanosite_dir(path="."):
 
 parser = argparse.ArgumentParser(prog="nanosite")
 parser.add_argument("dir", nargs="?", default=os.getcwd())
-args = parser.parse_args(["testsite/"])
+args = parser.parse_args()
 
 default_ctx = {"OutputDir": "output/", "MetaDir": "meta/"}
-build_site(args.dir, default_ctx)
+make_site(args.dir, default_ctx)
 print("Built site.")
