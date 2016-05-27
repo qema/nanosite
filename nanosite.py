@@ -183,7 +183,7 @@ def fill_template(tmpl, ctx):
 def build_file(top, node, ctx):
     assert(node["is_file"])
     
-    path = node["path"]
+    path = node["input_path"]
     root, ext = os.path.splitext(path)
 
     if ext.lower() in {".md", ".md+", ".html+"}:  # compile against templates
@@ -226,6 +226,7 @@ def add_dirtree_file(top, path, ctx, template_path):
     root, ext = os.path.splitext(path)
 
     out_dict = {}
+    new_ext = ext
     if ext.lower() == ".md" or ext.lower() == ".md+":
         html, meta = compile_markdown(open(path, "r").read())
         if ext.lower() == ".md+":
@@ -233,6 +234,7 @@ def add_dirtree_file(top, path, ctx, template_path):
         out_dict = {"content": html}
         for k in meta:
             out_dict[k] = meta[k]
+        new_ext = ".html"
         
         #ctx["content"] = html
         #ctx["meta"] = meta
@@ -241,6 +243,7 @@ def add_dirtree_file(top, path, ctx, template_path):
         #local_out_html = fill_template(contents, ctx)
         out_dict = {"content": contents}#local_out_html}
  
+        new_ext = ".html"
         #ctx["content"] = local_out_html
     elif ext.lower() == ".tmpl":
         out_dict = {}
@@ -252,9 +255,10 @@ def add_dirtree_file(top, path, ctx, template_path):
         out_dict = {}
 
     out_dict["is_file"] = True
-    out_dict["path"] = path
+    out_dict["input_path"] = os.path.relpath(path, top)
+    out_dict["path"] = os.path.splitext(os.path.relpath(path, top))[0] + new_ext
     out_dict["template_path"] = template_path
-    out_dict["date"] = time.localtime(os.path.getctime(path))
+    out_dict["date"] = time.localtime(os.path.getmtime(path))
     return out_dict
 
 def make_dirtree(top, path, ctx, template_path=None):
@@ -262,19 +266,21 @@ def make_dirtree(top, path, ctx, template_path=None):
     dirs = []
     tree = {}
     for subdir in os.listdir(path):
-        subpath = os.path.join(path, subdir)
-        if os.path.isfile(subpath):
-            # update template path if there is a template in this folder
-            root, ext = os.path.splitext(os.path.basename(subpath))
-            if root.lower() == "template" and ext.lower() == ".tmpl":
-                template_path = subpath
-            else:
-                files.append((subdir, subpath))
-        elif os.path.isdir(subpath):
-            rp = os.path.realpath(subpath)
-            if rp != os.path.realpath(os.path.join(top, ctx["MetaDir"])) and \
-               rp != os.path.realpath(os.path.join(top, ctx["OutputDir"])):
-                dirs.append((subdir, subpath))
+        if subdir[0] != ".":  # don't include hidden files
+            subpath = os.path.join(path, subdir)
+            if os.path.isfile(subpath):
+                # update template path if there is a template in this folder
+                root, ext = os.path.splitext(os.path.basename(subpath))
+                if root.lower() == "template" and ext.lower() == ".tmpl":
+                    template_path = subpath
+                else:
+                    files.append((subdir, subpath))
+            elif os.path.isdir(subpath):
+                rp = os.path.realpath(subpath)
+                md = os.path.join(top, ctx["MetaDir"])
+                od = os.path.join(top, ctx["OutputDir"])
+                if rp != os.path.realpath(md) and rp != os.path.realpath(od):
+                    dirs.append((subdir, subpath))
 
     for short_path, full_path in dirs:
         path_name = short_path.lower()
@@ -282,7 +288,7 @@ def make_dirtree(top, path, ctx, template_path=None):
         
     for short_path, full_path in files:
         name = os.path.splitext(short_path)[0].lower()  # remove extension
-        tree[name] = add_dirtree_file(top, full_path, ctx, template_path)
+        tree[name] = add_dirtree_file(top, full_path, dict(ctx), template_path)
 
     return tree
 
@@ -290,7 +296,7 @@ def make_dirtree(top, path, ctx, template_path=None):
 def build_dirtree(top, tree, ctx):
     for k, node in tree.items():
         if "is_file" in node and node["is_file"]:
-            build_file(top, node, ctx)
+            build_file(top, node, dict(ctx))
         else:
             build_dirtree(top, node, ctx)
             
