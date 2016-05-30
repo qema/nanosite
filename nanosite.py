@@ -225,7 +225,9 @@ def build_file(top, node, ctx):
         relpath = os.path.relpath(path, top)
         out_path = os.path.join(top, ctx["OutputDir"], relpath)
         os.makedirs(os.path.dirname(out_path), exist_ok=True)
-        shutil.copyfile(path, out_path)
+        # copy if src and dest are different (i.e. OutputDir != ".")
+        if os.path.realpath(path) != os.path.realpath(out_path):
+            shutil.copyfile(path, out_path)
     
 def add_dirtree_file(top, path, ctx, template_path):
     root, ext = os.path.splitext(path)
