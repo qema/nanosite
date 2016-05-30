@@ -11,6 +11,22 @@ import atexit
 from datetime import datetime
 from html import escape as escape_HTML
 
+# fetch key, possibly nested thru dot notation
+def ctx_fetch(ctx, line):
+    key, params = (line.split(" ", 1) + [""])[:2]
+    parts = key.split(".", 1)
+    if parts[0] in ctx:
+        if len(parts) == 1:
+            value = ctx[parts[0]]
+            # if it's a macro, call it with parameter [ctx]
+            if callable(value):
+                value = value(ctx, *tokenize_params(params))
+            return value
+        else:
+            return ctx_fetch(ctx[parts[0]], parts[1])
+    else:
+        return None
+
 # compile markdown to HTML, returning (html, meta_info) tuple
 def compile_markdown(md_text):
     md = markdown.Markdown(extensions=["markdown.extensions.meta"])
