@@ -428,6 +428,7 @@ def main():
     ctx = {"OutputDir": args.output_dir, "MetaDir": args.meta_dir}
     if action == "build" or action == "b":
         make_site(args.site_dir, ctx)
+        print("Built site.")
     elif action == "clean" or action == "c":
         clean_output_dir(args.site_dir, args.output_dir)
     elif action == "serve" or action == "s":
