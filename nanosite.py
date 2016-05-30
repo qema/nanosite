@@ -366,7 +366,9 @@ def run_server(port, site_dir, ctx):
     httpd.serve_forever()
 
 def clean_output_dir(site_dir, output_dir):
-    shutil.rmtree(os.path.join(site_dir, output_dir))
+    path = os.path.join(site_dir, output_dir)
+    if os.path.isdir(path):
+        shutil.rmtree(path)
     print("Cleaned output directory.")
 
 def get_cmdline_args():
