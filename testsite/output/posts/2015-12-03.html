@@ -1,8 +1,27 @@
-Master template
-
-----(Title: Shakespeare Social Networks<br>
-
-The content of this post is: [Begin]<p>I used Python, <a href="http://visjs.org">vis.js</a> and the <a href="http://shakespeare.mit.edu">MIT Shakespeare collection</a> to visualize dialogue networks in Shakespeare plays.</p>
+<html>
+  <head>
+    <title>Paradoxical - Shakespeare Social Networks</title>
+    <!-- Latest compiled and minified CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
+    <link rel="stylesheet" href="/style.css">
+  </head>
+  <body>
+    <div class="container">
+      <div class="row">
+	<div class="col-md-1"></div>
+	<div class="col-md-10">
+	  <header>
+	    <div class="header-title"><a href="/index.html">Paradoxical</a></div>
+	    <div class="header-tagline">A computer science blog.</div>
+	    <nav><ul><li>Code<ul><li><a href='/pages/Code/author.html'>Author</a></li><li><a href='/pages/Code/shakespeare.html'>Dialogue Graphs</a></li><li><a href='/pages/Code/sound-transfer.html'>Sound Transfer</a></li><li><a href='/pages/Code/tie-dye.html'>Tie-Dye Algorithm</a></li></ul></li><li>Games<ul><li><a href='/pages/Games/berry-hop.html'>Berry Hop</a></li><li><a href='/pages/Games/land-of-stuff.html'>The Land of Stuff</a></li><li><a href='/pages/Games/mister-man.html'>Mister Man</a></li><li><a href='/pages/Games/odyssey.html'>Odyssey</a></li></ul></li><li>Music<ul><li><a href='/pages/Music/compositions.html'>Compositions</a></li><li><a href='/pages/Music/covers.html'>Covers</a></li></ul></li></ul></nav>
+	  </header>
+	  <article>
+	    <div class="post">
+<div class="post-meta">
+<div class="post-date">25 Dec 2015</div>
+<div class="post-title">Shakespeare Social Networks</div>
+</div>
+<article><p>I used Python, <a href="http://visjs.org">vis.js</a> and the <a href="http://shakespeare.mit.edu">MIT Shakespeare collection</a> to visualize dialogue networks in Shakespeare plays.</p>
 <h2>Method</h2>
 <p>Each vertex represents a character, and the edges connect characters who talk with each other. I did this by taking all the sets of characters on stage between each stage direction, and then merging these sets. This turns out to be a good heuristic because it breaks groups between character entrances and exits, and other stage directions simply cause redundant groups to form which get filtered during merging.</p>
 <p>The edges are modeled as physical springs with vis.js so clusters tend to form based on the emergent "cliques". Finally, the characters are colored in the graph by popularity.</p>
@@ -13,4 +32,16 @@ The content of this post is: [Begin]<p>I used Python, <a href="http://visjs.org"
 <h2>Midsummer Night's Dream</h2>
 <p><img alt="Midsummer Night's Dream" src="http://wanganzhou.com/images/shakespeare/midsummer.png" /></p>
 <h2>Hamlet</h2>
-<p><img alt="Hamlet" src="http://wanganzhou.com/images/shakespeare/hamlet.png" /></p>[End])----
+<p><img alt="Hamlet" src="http://wanganzhou.com/images/shakespeare/hamlet.png" /></p></article>
+</div>
+<div><a href="/index.html">Return to home.</a></div>
+	  </article>
+	  <footer>
+	    Copyright Andrew Wang. Powered by <a href="https://github.com/qema/nanosite">nanosite</a>.
+	  </footer>
+	</div>
+      </div>
+      <div class="col-md-1"></div>
+    </div>
+  </body>
+</html>

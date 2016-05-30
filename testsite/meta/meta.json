@@ -1,3 +1,8 @@
 {
-  "testattr": "na"
+  "site": {
+    "title": "Paradoxical",
+    "tagline": "A computer science blog.",
+    "author": "Andrew Wang",
+    "url": ""
+  }
 }

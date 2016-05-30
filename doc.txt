@@ -18,6 +18,7 @@ Site generation.
 1. Create a context with meta.json (which contains a dictionary) and macros.py
   - meta.json meta [key: value] pairs will be directly added to the context
   - macros.py is executed. The function [macro(s, fun)] is exposed, where [s] is the name of the context key that will invoke the macro, and [fun] is a lambda expression [lambda: ctx = ...] that takes in context [ctx] and outputs any stringable value. When the macro is invoked through {{key}}, the lambda expression is called with the current file's context as the parameter. These macros are all added to the context.
+    - ctx_fetch(ctx, key) is also exposed, which allows access of context variables through dot notation.
 2. Traverse SiteDir and its subdirectories, creating corresponding built files in respective paths in OutputDir.
   - Each file gets a context with a view of the directory tree, with names in lowercase and with file extensions removed.
     - Each file in the directory tree has properties is_file = True, path (path of output file [with the extension of the output file], relative to site top), template_path, and date (time struct) which contains the last date modified.

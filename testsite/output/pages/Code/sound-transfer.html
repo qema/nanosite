@@ -1,3 +1,47 @@
-Master template
-
-----()----
+<html>
+  <head>
+    <title>Paradoxical - Sound Transfer</title>
+    <!-- Latest compiled and minified CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
+    <link rel="stylesheet" href="/style.css">
+  </head>
+  <body>
+    <div class="container">
+      <div class="row">
+	<div class="col-md-1"></div>
+	<div class="col-md-10">
+	  <header>
+	    <div class="header-title"><a href="/index.html">Paradoxical</a></div>
+	    <div class="header-tagline">A computer science blog.</div>
+	    <nav><ul><li>Code<ul><li><a href='/pages/Code/author.html'>Author</a></li><li><a href='/pages/Code/shakespeare.html'>Dialogue Graphs</a></li><li><a href='/pages/Code/sound-transfer.html'>Sound Transfer</a></li><li><a href='/pages/Code/tie-dye.html'>Tie-Dye Algorithm</a></li></ul></li><li>Games<ul><li><a href='/pages/Games/berry-hop.html'>Berry Hop</a></li><li><a href='/pages/Games/land-of-stuff.html'>The Land of Stuff</a></li><li><a href='/pages/Games/mister-man.html'>Mister Man</a></li><li><a href='/pages/Games/odyssey.html'>Odyssey</a></li></ul></li><li>Music<ul><li><a href='/pages/Music/compositions.html'>Compositions</a></li><li><a href='/pages/Music/covers.html'>Covers</a></li></ul></li></ul></nav>
+	  </header>
+	  <article>
+	    <div class="page">
+<div class="page-title">Sound Transfer</div>
+<article><p><img alt="Sound Transfer" src="http://wanganzhou.com/images/sound-transfer/screenshot.png" /></p>
+<p>Sound Transfer is a system to send a message from your computer to a friend's with speaker and mic. It uses a melodic pitch-based protocol, which means you can hear your message converted into a musical ditty in the process!</p>
+<p>Check out the source code on GitHub: <a href="https://github.com/losmmorpg/sound-transfer">Sound Transfer</a>.</p>
+<p>Method: The outgoing message is converted into its binary ASCII representation, then converted to pitches with the melodic protocol. The receiver picks up the pitches with Fourier transforms and decodes from binary to ASCII text.</p>
+<p>Here's the protocol.</p>
+<pre><code>Pitch   Symbol  Meaning
+---------------------------------------
+1976 Hz  '!'    Begin transmission.
+1174 Hz  '0'    Send a binary 0.
+784 Hz   '1'    Send a binary 1.
+988 Hz   '*'    Used as a separator between repeated digits.
+1568 Hz  '.'    End transmission.
+</code></pre>
+<p>Wow! So musical!<br />
+Create your own message melodies.</p></article>
+</div>
+<div><a href="/index.html">Return to home.</a></div>
+	  </article>
+	  <footer>
+	    Copyright Andrew Wang. Powered by <a href="https://github.com/qema/nanosite">nanosite</a>.
+	  </footer>
+	</div>
+      </div>
+      <div class="col-md-1"></div>
+    </div>
+  </body>
+</html>

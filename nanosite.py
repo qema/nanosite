@@ -4,6 +4,11 @@ import json
 import shutil
 import argparse
 import time
+import http.server
+import socketserver
+import threading
+import atexit
+from datetime import datetime
 from html import escape as escape_HTML
 
 # compile markdown to HTML, returning (html, meta_info) tuple
@@ -38,22 +43,6 @@ def tokenize_params(params):
                 except ValueError:
                     out.append(token)
     return out
-        
-# fetch key, possibly nested thru dot notation
-def ctx_fetch(ctx, line):
-    key, params = (line.split(" ", 1) + [""])[:2]
-    parts = key.split(".", 1)
-    if parts[0] in ctx:
-        if len(parts) == 1:
-            value = ctx[parts[0]]
-            # if it's a macro, call it with parameter [ctx]
-            if callable(value):
-                value = value(ctx, *tokenize_params(params))
-            return value
-        else:
-            return ctx_fetch(ctx[parts[0]], parts[1])
-    else:
-        return None
 
 template_cache = {}
 # get template from path (cached)
@@ -293,12 +282,12 @@ def make_dirtree(top, path, ctx, template_path=None):
     return tree
 
 # traverse tree to build all site files
-def build_dirtree(top, tree, ctx):
+def compile_dirtree(top, tree, ctx):
     for k, node in tree.items():
         if "is_file" in node and node["is_file"]:
             build_file(top, node, dict(ctx))
         else:
-            build_dirtree(top, node, ctx)
+            compile_dirtree(top, node, ctx)
             
 def load_meta(top, ctx):
     meta_path = os.path.join(top, ctx["MetaDir"], "meta.json")
@@ -326,7 +315,7 @@ def make_site(top, ctx):
     for k in tree:
         ctx[k] = tree[k]
         
-    build_dirtree(top, tree, ctx)
+    compile_dirtree(top, tree, ctx)
 
 def is_in_nanosite_dir(path="."):
     if os.path.isfile(os.path.join(path, ".nanosite")):
@@ -338,10 +327,114 @@ def is_in_nanosite_dir(path="."):
         else:
             return is_in_nanosite_dir(up)
 
-parser = argparse.ArgumentParser(prog="nanosite")
-parser.add_argument("dir", nargs="?", default=os.getcwd())
-args = parser.parse_args()
+def update(top, ctx):
+    def last_update_time(walk):
+        return time.ctime(max(os.path.getmtime(p) for p, _, _ in walk))
+    needs_update = True
+    last_t = None
+    last_walk = None
+    while True:
+        if needs_update:
+            needs_update = False
+            make_site(top, ctx)
+            print("[" + str(datetime.now()) + "]", "Built site.")
+        walk = sorted(os.walk(top))
+        t = last_update_time(walk)
+        time.sleep(1)
+        # file updated or dirtree changed
+        if last_t is not None and (t != last_t or walk != last_walk):
+            needs_update = True
+        last_t = t
+        last_walk = walk
 
-default_ctx = {"OutputDir": "output/", "MetaDir": "meta/"}
-make_site(args.dir, default_ctx)
-print("Built site.")
+def run_server(port, site_dir, ctx):
+    output_dir = ctx["OutputDir"]
+    
+    # start update thread
+    thread = threading.Thread(target=update, args=(site_dir, ctx))
+    thread.daemon = True
+    thread.start()
+
+    # start server
+    class RequestHandler(http.server.SimpleHTTPRequestHandler):
+        def translate_path(self, path):
+            return os.path.join(site_dir, output_dir, path[1:])
+    handler = RequestHandler
+    httpd = socketserver.TCPServer(("", port), handler)
+    atexit.register(lambda: httpd.shutdown())
+    print("Serving at port", port)
+    httpd.serve_forever()
+
+def clean_output_dir(site_dir, output_dir):
+    shutil.rmtree(os.path.join(site_dir, output_dir))
+    print("Cleaned output directory.")
+
+def get_cmdline_args():
+    parser = argparse.ArgumentParser(prog="nanosite")
+    parser.add_argument("action", nargs="?", default="",
+                        help="options: build, clean, serve")
+    parser.add_argument("--port", action="store", dest="port",
+                        default="8000", type=int, help="server port")
+    parser.add_argument("-p", action="store", dest="site_dir",
+                        default=os.getcwd(), help="site directory")
+    parser.add_argument("-o", action="store", dest="output_dir",
+                        default="output/", help="set output directory")
+    parser.add_argument("-m", action="store", dest="meta_dir",
+                        default="meta/", help="set meta directory")
+    return parser.parse_args()
+
+def setup_blank_site(top, ctx, meta):
+    open(".nanosite", "w").close()
+    open("index.html+", "w").close()
+    meta_dir = os.path.join(top, ctx["MetaDir"])
+    os.makedirs(meta_dir, exist_ok=True)
+    open(os.path.join(meta_dir, "master.tmpl"), "w").close()
+    open(os.path.join(meta_dir, "macros.py"), "w").close()
+    with open(os.path.join(meta_dir, "meta.json")) as f:
+        json.dump(meta, f)
+
+def setup_site_interactive(top, ctx):
+    def prompt_YN(prompt):
+        full_prompt = prompt + " [y/n] "
+        print(full_prompt, end="")
+        x = input()
+        while x[0].lower() != "y" and x[0].lower() != "n":
+            print("Invalid option. Type 'y' for yes and 'n' for no.")
+            print(full_prompt, end="")
+            x = input()
+        return x[0].lower() == "y"
+    if prompt_YN("Would you like to set up a site in this directory?"):
+        print("Enter a title for your site: ", end="")
+        title = input()
+        print("Enter a tagline for your site: ", end="")
+        tagline = input()
+        print("Enter the author name for your site: ", end="")
+        author = input()
+        meta = {"site": {"title": title, "tagline": tagline,
+                         "author": author, "url": "/"}}
+        setup_blank_site(top, ctx, meta)
+        print("Success! Generated site.")
+    else:
+        print("Canceled.")
+    
+def main():
+    args = get_cmdline_args()
+    action = args.action.lower()
+
+    ctx = {"OutputDir": args.output_dir, "MetaDir": args.meta_dir}
+    if action == "build" or action == "b":
+        make_site(args.site_dir, ctx)
+    elif action == "clean" or action == "c":
+        clean_output_dir(args.site_dir, args.output_dir)
+    elif action == "serve" or action == "s":
+        run_server(args.port, args.site_dir, ctx)
+    elif action == "":
+        if is_in_nanosite_dir():  # default action: run server
+            run_server(args.port, args.site_dir, ctx)
+        else:
+            setup_site_interactive(args.site_dir, ctx)
+    else:
+        print("Unrecognized action. Valid actions: build, clean, serve.")
+
+main()
+    

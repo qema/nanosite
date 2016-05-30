@@ -1,1 +1,6 @@
-Archive
+<div>Archive</div>
+<ul>
+{{#for post in newest 10000 posts}}
+<li><a href="{{site.url}}/{{post.path}}">{{post.title}}</a> ({{format_date post.date}})</li>
+{{#endfor}}
+</ul>

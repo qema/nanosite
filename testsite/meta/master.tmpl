@@ -1,3 +1,29 @@
-Master template
-
-----({{{content}}})----
+<html>
+  <head>
+    <title>{{site.title}}{{#if title}} - {{title}}{{#endif}}</title>
+    <!-- Latest compiled and minified CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
+    <link rel="stylesheet" href="{{site.url}}/style.css">
+  </head>
+  <body>
+    <div class="container">
+      <div class="row">
+	<div class="col-md-1"></div>
+	<div class="col-md-10">
+	  <header>
+	    <div class="header-title"><a href="{{site.url}}/index.html">{{site.title}}</a></div>
+	    <div class="header-tagline">{{site.tagline}}</div>
+	    <nav>{{{menu}}}</nav>
+	  </header>
+	  <article>
+	    {{{content}}}
+	  </article>
+	  <footer>
+	    Copyright {{site.author}}. Powered by <a href="https://github.com/qema/nanosite">nanosite</a>.
+	  </footer>
+	</div>
+      </div>
+      <div class="col-md-1"></div>
+    </div>
+  </body>
+</html>

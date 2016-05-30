@@ -1,3 +1,12 @@
-Front
-
-{{{Pages}}}<br>
+{{#for post in newest 5 posts}}
+<div class="post">
+  <div class="post-meta">
+    <div class="post-date">{{format_date post.date}}</div>
+    <div class="post-title"><a href="{{site.url}}/{{post.path}}">{{post.title}}</a></div>
+  </div>
+  <div>{{{post.content}}}</div>
+</div>
+{{#endfor}}
+<div>
+  <a href="{{site.url}}/archive.html">View older posts.</a>
+</div>

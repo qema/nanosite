@@ -12,7 +12,7 @@ Arrow keys to move, and use Shift + Arrow key to do a super jump which jumps twi
 
 ## Story
 
-Mister Man grew from a Christmas present for my twin friends Cary and Michael ([htwins.net](http://htwins.net)). For holidays and birthdays, we would make elaborate zany projects to share with each other, from Sodoku comic books to computer games. Some of these were precursors to some of our biggest projects, from [The Land of Stuff](http://wanganzhou.com/archive/2015-10-12.html) to [Battle for Dream Islan](https://www.youtube.com/playlist?list=PL24C8378F296DB656).
+Mister Man grew from a Christmas present for my twin friends Cary and Michael ([htwins.net](http://htwins.net)). For holidays and birthdays, we would make elaborate zany projects to share with each other, from Sodoku comic books to computer games. Some of these were precursors to some of our biggest projects, from [The Land of Stuff](http://wanganzhou.com/archive/2015-10-12.html) to [Battle for Dream Island](https://www.youtube.com/playlist?list=PL24C8378F296DB656).
 
 Mister Man became an early exploration of:
 

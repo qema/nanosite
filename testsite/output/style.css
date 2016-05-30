@@ -1,0 +1,142 @@
+@import url(https://fonts.googleapis.com/css?family=Merriweather:400,400italic,700);
+
+body {
+    font-family: Merriweather, Cambria, Charter;
+}
+
+header {
+    text-align: center;
+    margin-top: 1.2em;
+    margin-bottom: 3em;
+}
+
+.header-title {
+    font-size: 3.2em;
+    color: black;
+    margin: 0;
+}
+
+.header-title a {
+    text-decoration: none;
+}
+
+.header-title a:hover {
+    color: black;
+    text-decoration: underline;
+}
+
+.header-tagline {
+    font-size: 0.8em;
+}
+
+nav {
+    display: block;
+    margin: 1em;
+}
+
+nav ul {
+    list-style: none;
+    margin: 0;
+    padding-left: 0;
+}
+
+nav li {
+    display: inline;
+    float: center;
+    padding: 1em;
+    position: relative;
+}
+  
+nav li a {
+    text-decoration: none;
+    display: inline-block;
+    color: black;
+}
+
+nav li:hover {
+    cursor: default;
+}
+
+nav ul li ul {
+    visibility: hidden;
+    min-width: 150px;
+    position: absolute;
+    text-align: left;
+    left: 0;
+    z-index: 999;
+}
+
+nav ul li:hover {
+    color: darkred;
+}
+
+nav ul li:hover > ul,
+nav ul li ul:hover {
+    visibility: visible;
+}
+
+nav ul li ul li {
+    clear: both;
+    padding: 0 0 0 1em;
+    width: 100%;
+    display: block;
+}
+
+nav ul li ul li a:hover {
+    text-decoration: none;
+    color: red;
+}
+
+.post {
+    margin-bottom: 3em;
+}
+
+.post h1, .post h2, .post h3,
+.page h1, .page h2, .page h3 {
+    font-size: 1.3em;
+    font-weight: bold;
+}
+
+.page-title, .post-title {
+    margin-top: 0;
+    margin-bottom: 0;
+    font-size: 2.25em;
+    font-weight: bold;
+}
+
+.post-title a {
+    text-decoration: none;
+}
+
+.post-title a:hover {
+    color: black;
+    text-decoration: underline;
+}
+
+.post-meta {
+    font-size: 0.8em;
+}
+
+p {
+}
+
+a {
+    color: black;
+    text-decoration: underline;
+}
+a:hover {
+    color: red;
+}
+
+img {/*
+    image-rendering: pixelated;
+    image-rendering: -webkit-optimize-contrast;
+    image-rendering: -moz-crisp-edges;*/
+    max-width: 100%;
+}
+
+footer {
+    text-align: center;
+    font-size: 0.8em;
+    margin-bottom: 2em;
+}

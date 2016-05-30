@@ -1,3 +1,8 @@
-Title: {{meta.title}}<br>
-
-The content of this post is: [Begin]{{{content}}}[End]
+<div class="post">
+<div class="post-meta">
+<div class="post-date">{{format_date date}}</div>
+<div class="post-title">{{title}}</div>
+</div>
+<article>{{{content}}}</article>
+</div>
+<div><a href="{{site.url}}/index.html">Return to home.</a></div>

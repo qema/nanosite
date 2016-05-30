@@ -1,5 +1,131 @@
-Master template
+<html>
+  <head>
+    <title>Paradoxical</title>
+    <!-- Latest compiled and minified CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
+    <link rel="stylesheet" href="/style.css">
+  </head>
+  <body>
+    <div class="container">
+      <div class="row">
+	<div class="col-md-1"></div>
+	<div class="col-md-10">
+	  <header>
+	    <div class="header-title"><a href="/index.html">Paradoxical</a></div>
+	    <div class="header-tagline">A computer science blog.</div>
+	    <nav><ul><li>Code<ul><li><a href='/pages/Code/author.html'>Author</a></li><li><a href='/pages/Code/shakespeare.html'>Dialogue Graphs</a></li><li><a href='/pages/Code/sound-transfer.html'>Sound Transfer</a></li><li><a href='/pages/Code/tie-dye.html'>Tie-Dye Algorithm</a></li></ul></li><li>Games<ul><li><a href='/pages/Games/berry-hop.html'>Berry Hop</a></li><li><a href='/pages/Games/land-of-stuff.html'>The Land of Stuff</a></li><li><a href='/pages/Games/mister-man.html'>Mister Man</a></li><li><a href='/pages/Games/odyssey.html'>Odyssey</a></li></ul></li><li>Music<ul><li><a href='/pages/Music/compositions.html'>Compositions</a></li><li><a href='/pages/Music/covers.html'>Covers</a></li></ul></li></ul></nav>
+	  </header>
+	  <article>
+	    
+<div class="post">
+  <div class="post-meta">
+    <div class="post-date">27 May 2016</div>
+    <div class="post-title"><a href="/posts/2016-01-11.html">The Adventures of Mister Man</a></div>
+  </div>
+  <div><p>Today's project spotlight is a platformer game I made in FreeBASIC. It features four exotic worlds that you can jump into and explore, including a boss! <a href="http://wanganzhou.com/archive/2015-10-23.html">Berry Hop</a> is the successor to this game.</p>
+<p><img alt="Mister Man" src="http://wanganzhou.com/images/misterman/misterman.png" /></p>
+<p>Mister Man is on a quest to defeat the evil Lava Monster and restore the balance of nature! Can you help him save the world?</p>
+<p>You can download The Adventures of Mister Man here: <a href="http://wanganzhou.com/downloads/misterman.exe">Mister Man</a>. (Windows)</p>
+<p>Arrow keys to move, and use Shift + Arrow key to do a super jump which jumps twice as far.</p>
+<h2>Story</h2>
+<p>Mister Man grew from a Christmas present for my twin friends Cary and Michael (<a href="http://htwins.net">htwins.net</a>). For holidays and birthdays, we would make elaborate zany projects to share with each other, from Sodoku comic books to computer games. Some of these were precursors to some of our biggest projects, from <a href="http://wanganzhou.com/archive/2015-10-12.html">The Land of Stuff</a> to <a href="https://www.youtube.com/playlist?list=PL24C8378F296DB656">Battle for Dream Island</a>.</p>
+<p>Mister Man became an early exploration of:</p>
+<ul>
+<li>Elaborate game characters</li>
+<li>Vibing my musical compositions with game environments</li>
+<li>Custom map editors for character scripting</li>
+</ul>
+<p><img alt="Mister Man" src="http://wanganzhou.com/images/misterman/mapedit.png" /></p>
+<p>Check it out and dive into four new worlds!</p></div>
+</div>
 
-----(Front
+<div class="post">
+  <div class="post-meta">
+    <div class="post-date">11 Jan 2016</div>
+    <div class="post-title"><a href="/posts/2016-01-12.html">Odyssey</a></div>
+  </div>
+  <div><p>Odyssey is another game from the FreeBASIC era, which I planned to be the successor to <a href="http://wanganzhou.com/land-of-stuff.html">The Land of Stuff</a>. Eventually I integrated its improved server into the Land of Stuff for its rehaul.</p>
+<p><img alt="Odyssey" src="http://wanganzhou.com/images/odyssey/filled.png" /></p>
+<p>A sci-fi MMORPG, it reached the closed beta stage and is one of my only projects to break into the third dimension. I implemented the 3D engine from scratch using 2D line drawing, inspired by a QBasic pseudo-3D racing game which achieved bigger than life perspective effects.</p>
+<p><img alt="Odyssey" src="http://wanganzhou.com/images/odyssey/wire.png" /></p>
+<h2>Red versus Blue</h2>
+<p>In terms of game mechanics, Odyssey is also an oddity, featuring a combat system based on opposing red and blue forces, with a neutral gray. The world was split in this way, with each faction receiving its own weapons and resources.</p>
+<p><img src="http://wanganzhou.com/images/odyssey/blueshield.png" />
+<img src="http://wanganzhou.com/images/odyssey/neophite.png" />
+Blue Shield and Neophyte rock.</p>
+<p><img src="http://wanganzhou.com/images/odyssey/redshield.png" />
+<img src="http://wanganzhou.com/images/odyssey/strinite.png" />
+Red Shield and Strinite rock.</p>
+<p>Which side would you join?</p>
+<h2>Toolbox</h2>
+<p>Finally it was another step towards extensive tooling in my projects, from an EXP curve planner to a rule-breaker logger. Here's the EXP grapher:</p>
+<p><img alt="EXP curve" src="http://wanganzhou.com/images/odyssey/grapher.png" /></p>
+<h2>But Some Things Stay the Same</h2>
+<p>Like most of my games it also featured multiple planet environments to launch to and explore. Adventure is everywhere.</p></div>
+</div>
 
-None<br>)----
+<div class="post">
+  <div class="post-meta">
+    <div class="post-date">25 Dec 2015</div>
+    <div class="post-title"><a href="/posts/2015-12-03.html">Shakespeare Social Networks</a></div>
+  </div>
+  <div><p>I used Python, <a href="http://visjs.org">vis.js</a> and the <a href="http://shakespeare.mit.edu">MIT Shakespeare collection</a> to visualize dialogue networks in Shakespeare plays.</p>
+<h2>Method</h2>
+<p>Each vertex represents a character, and the edges connect characters who talk with each other. I did this by taking all the sets of characters on stage between each stage direction, and then merging these sets. This turns out to be a good heuristic because it breaks groups between character entrances and exits, and other stage directions simply cause redundant groups to form which get filtered during merging.</p>
+<p>The edges are modeled as physical springs with vis.js so clusters tend to form based on the emergent "cliques". Finally, the characters are colored in the graph by popularity.</p>
+<p>I'm also posting an interactive version as a page here: <a href="http://wanganzhou.com/shakespeare.html">Dialogue Graphs</a></p>
+<p>Here are the dialogue graphs!</p>
+<h2>Taming of the Shrew</h2>
+<p><img alt="Taming of the Shrew" src="http://wanganzhou.com/images/shakespeare/shrew.png" /></p>
+<h2>Midsummer Night's Dream</h2>
+<p><img alt="Midsummer Night's Dream" src="http://wanganzhou.com/images/shakespeare/midsummer.png" /></p>
+<h2>Hamlet</h2>
+<p><img alt="Hamlet" src="http://wanganzhou.com/images/shakespeare/hamlet.png" /></p></div>
+</div>
+
+<div class="post">
+  <div class="post-meta">
+    <div class="post-date">12 Nov 2015</div>
+    <div class="post-title"><a href="/posts/2015-11-09.html">Tie-Dye Algorithm</a></div>
+  </div>
+  <div><p><img alt="Tie-Dye" src="http://wanganzhou.com/images/tie-dye/tie-dye2.png" /></p>
+<p>There's some cool theory behind my rainbow tie-dye splashes. They're generated with <a href="https://en.wikipedia.org/wiki/Prim%27s_algorithm">Prim's Minimum Spanning Tree Algorithm</a>, which is a really cool algorithm to connect the vertices of a graph, specifically creating a tree with shortest total edge length (or "weight"). It's used for anything from maze generation to circuit design.</p>
+<p>Here's how the Tie Dye works.</p>
+<p>We start out with the idea of turning our computer screen into a graph, with a vertex at every pixel.</p>
+<p><img alt="Graph it!" src="http://wanganzhou.com/images/tie-dye/graph-empty.png" /></p>
+<p>We make a full grid connecting all vertices, assigning random weight to each edge.</p>
+<p><img alt="Connect" src="http://wanganzhou.com/images/tie-dye/graph-full.png" /></p>
+<p>Next we use Prim's Algorithm to connect the edges in a tree. This gets rid of any loops in the graph. Now our computer tie dye will flow into new spaces instead of mixing with itself, just like water tension does for real tie dye.</p>
+<p><img alt="Prim It!" src="http://wanganzhou.com/images/tie-dye/graph0.png" /></p>
+<p>Now, starting from a random point, we'll do a paint bucket fill on it (specifically a <a href="https://en.wikipedia.org/wiki/Depth-first_search">Depth First Search</a>). Except, ours will be a special rainbow paint bucket that changes color after each step, and can only flow along the edges.</p>
+<p><img alt="Flow" src="http://wanganzhou.com/images/tie-dye/graph1.png" /></p>
+<p><img alt="Flow" src="http://wanganzhou.com/images/tie-dye/graph2.png" /></p>
+<p><img alt="Flow" src="http://wanganzhou.com/images/tie-dye/graph3.png" /></p>
+<p><img alt="Flow" src="http://wanganzhou.com/images/tie-dye/graph4.png" /></p>
+<p><img alt="Flow" src="http://wanganzhou.com/images/tie-dye/graph5.png" /></p>
+<p>Now we have a rainbow tie-dye pattern!</p>
+<p>You can make your own Prim Tie-Dyes. I have my tie-dye program on GitHub here: <a href="https://github.com/qema/tie-dye">Tie-Dye</a>. It's written in Swift and Cocoa. It uses a slightly different implementation where the painting and the Prim are interlaced. Check it out and share your tie-dye creations with the world!</p>
+<p><img alt="Tie-Dye" src="http://wanganzhou.com/images/tie-dye/tie-dye1.png" /></p></div>
+</div>
+
+<div class="post">
+  <div class="post-meta">
+    <div class="post-date">30 Oct 2015</div>
+    <div class="post-title"><a href="/posts/2015-10-30.html">More Music</a></div>
+  </div>
+  <div><p>Music has been updated with more compositions and a new <a href="http://wanganzhou.com/covers.html">Covers</a> section. Check it out!</p></div>
+</div>
+
+<div>
+  <a href="/archive.html">View older posts.</a>
+</div>
+	  </article>
+	  <footer>
+	    Copyright Andrew Wang. Powered by <a href="https://github.com/qema/nanosite">nanosite</a>.
+	  </footer>
+	</div>
+      </div>
+      <div class="col-md-1"></div>
+    </div>
+  </body>
+</html>
