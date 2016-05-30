@@ -221,13 +221,14 @@ def build_file(top, node, ctx):
             f.write(out_html)
     elif ext.lower() == ".tmpl":
         pass
-    else:   # copy file
+    else:   # copy file (make hard link)
         relpath = os.path.relpath(path, top)
         out_path = os.path.join(top, ctx["OutputDir"], relpath)
         os.makedirs(os.path.dirname(out_path), exist_ok=True)
         # copy if src and dest are different (i.e. OutputDir != ".")
         if os.path.realpath(path) != os.path.realpath(out_path):
-            shutil.copyfile(path, out_path)
+            #shutil.copyfile(path, out_path)
+            os.link(path, out_path)
     
 def add_dirtree_file(top, path, ctx, template_path):
     root, ext = os.path.splitext(path)
