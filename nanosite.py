@@ -390,7 +390,7 @@ def setup_blank_site(top, ctx, meta):
     os.makedirs(meta_dir, exist_ok=True)
     open(os.path.join(meta_dir, "master.tmpl"), "w").close()
     open(os.path.join(meta_dir, "macros.py"), "w").close()
-    with open(os.path.join(meta_dir, "meta.json")) as f:
+    with open(os.path.join(meta_dir, "meta.json"), "w") as f:
         json.dump(meta, f)
 
 def setup_site_interactive(top, ctx):
