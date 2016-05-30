@@ -408,8 +408,10 @@ def setup_blank_site(top, ctx, meta):
     open("index.html+", "w").close()
     meta_dir = os.path.join(top, ctx["MetaDir"])
     os.makedirs(meta_dir, exist_ok=True)
-    open(os.path.join(meta_dir, "master.tmpl"), "w").close()
-    open(os.path.join(meta_dir, "macros.py"), "w").close()
+    with open(os.path.join(meta_dir, "master.tmpl"), "w") as f:
+        f.write("{{content}}")
+    with open(os.path.join(meta_dir, "macros.py"), "w") as f:
+        f.write('# macro("example", lambda ctx: ctx_fetch(ctx, "site.title"))')
     with open(os.path.join(meta_dir, "meta.json"), "w") as f:
         json.dump(meta, f)
 
