@@ -369,7 +369,9 @@ def clean_output_dir(site_dir, output_dir):
     path = os.path.join(site_dir, output_dir)
     if os.path.isdir(path):
         shutil.rmtree(path)
-    print("Cleaned output directory.")
+        print("Cleaned output directory.")
+    else:
+        print("Nothing to clean.")
 
 def get_cmdline_args():
     parser = argparse.ArgumentParser(prog="nanosite")
