@@ -1,0 +1,8 @@
+setup.py
+nanosite/__init__.py
+nanosite/nanosite_tests.py
+nanosite.egg-info/PKG-INFO
+nanosite.egg-info/SOURCES.txt
+nanosite.egg-info/dependency_links.txt
+nanosite.egg-info/entry_points.txt
+nanosite.egg-info/top_level.txt

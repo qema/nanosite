@@ -1,3 +1,0 @@
-#!/bin/bash
-
-python3 /users/andrew/dev/python/nanosite/nanosite.py "$@"

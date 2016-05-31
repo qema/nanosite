@@ -191,6 +191,7 @@ def build_file(top, node, ctx):
     path = node["input_path"]
     root, ext = os.path.splitext(path)
 
+    modified_files = []
     if ext.lower() in {".md", ".md+", ".html+"}:  # compile against templates
         # copy all node properties
         for k in node:
@@ -219,16 +220,23 @@ def build_file(top, node, ctx):
         with open(out_path, "w") as f:
             # get/create output path
             f.write(out_html)
+        modified_files = [os.path.abspath(out_path)]
     elif ext.lower() == ".tmpl":
         pass
-    else:   # copy file (make hard link)
+    else:   # copy file (make hard link on unix)
         relpath = os.path.relpath(path, top)
         out_path = os.path.join(top, ctx["OutputDir"], relpath)
         os.makedirs(os.path.dirname(out_path), exist_ok=True)
         # copy if src and dest are different (i.e. OutputDir != ".")
-        if os.path.realpath(path) != os.path.realpath(out_path):
-            #shutil.copyfile(path, out_path)
-            os.link(path, out_path)
+        if os.path.abspath(path) != os.path.abspath(out_path):
+            if os.name == "nt":
+                shutil.copyfile(path, out_path)
+            else:
+                if os.path.exists(out_path):
+                    os.unlink(out_path)
+                os.link(path, out_path)
+            modified_files = [os.path.abspath(out_path)]
+    return modified_files
     
 def add_dirtree_file(top, path, ctx, template_path):
     root, ext = os.path.splitext(path)
@@ -284,10 +292,10 @@ def make_dirtree(top, path, ctx, template_path=None):
                 else:
                     files.append((subdir, subpath))
             elif os.path.isdir(subpath):
-                rp = os.path.realpath(subpath)
+                rp = os.path.abspath(subpath)
                 md = os.path.join(top, ctx["MetaDir"])
                 od = os.path.join(top, ctx["OutputDir"])
-                if rp != os.path.realpath(md) and rp != os.path.realpath(od):
+                if rp != os.path.abspath(md) and rp != os.path.abspath(od):
                     dirs.append((subdir, subpath))
 
     for short_path, full_path in dirs:
@@ -302,11 +310,14 @@ def make_dirtree(top, path, ctx, template_path=None):
 
 # traverse tree to build all site files
 def compile_dirtree(top, tree, ctx):
+    modified_files = []
     for k, node in tree.items():
         if "is_file" in node and node["is_file"]:
-            build_file(top, node, dict(ctx))
+            mf = build_file(top, node, dict(ctx))
         else:
-            compile_dirtree(top, node, ctx)
+            mf = compile_dirtree(top, node, ctx)
+        modified_files.append(mf)
+    return modified_files
             
 def load_meta(top, ctx):
     meta_path = os.path.join(top, ctx["MetaDir"], "meta.json")
@@ -324,7 +335,8 @@ def register_macros(top, ctx):
         pgm = open(pgm_path, "r").read()
         exec(pgm, dict(list(globals().items()) + list(locals().items())))
     return ctx
-    
+
+# returns array of absolute paths of the files modified
 def make_site(top, ctx):
     ctx = load_meta(top, ctx)
     ctx = register_macros(top, ctx)
@@ -334,31 +346,40 @@ def make_site(top, ctx):
     for k in tree:
         ctx[k] = tree[k]
         
-    compile_dirtree(top, tree, ctx)
+    mf = compile_dirtree(top, tree, ctx)
+    return mf
 
 def is_in_nanosite_dir(path="."):
     if os.path.isfile(os.path.join(path, ".nanosite")):
         return True
     else:
         up = os.path.join("..", path)
-        if os.path.realpath(up) == os.path.realpath(path):  # reached root
+        if os.path.abspath(up) == os.path.abspath(path):  # reached root
             return False
         else:
             return is_in_nanosite_dir(up)
 
 def update(top, ctx):
-    def last_update_time(walk):
-        return time.ctime(max(os.path.getmtime(p) for p, _, _ in walk))
+    def last_update_time(walk, ignore=[]):
+        for path, dirs, files in walk:
+            if dirs == []:
+                fs = [os.path.getmtime(os.path.join(path, f)) for f in files \
+                      if os.path.abspath(os.path.join(path, f)) not in ignore \
+                      and f[0] != "."]
+                return time.ctime(max(fs)) if fs != [] else 0
+            else:
+                return max(last_update_time(os.walk(os.path.join(path, d)),
+                                            ignore) for d in dirs)
     needs_update = True
     last_t = None
     last_walk = None
     while True:
         if needs_update:
             needs_update = False
-            make_site(top, ctx)
+            mf = make_site(top, ctx)
             print("[" + str(datetime.now()) + "]", "Built site.")
         walk = sorted(os.walk(top))
-        t = last_update_time(walk)
+        t = last_update_time(walk, mf)
         time.sleep(1)
         # file updated or dirtree changed
         if last_t is not None and (t != last_t or walk != last_walk):
@@ -395,7 +416,7 @@ def clean_output_dir(site_dir, output_dir):
 def get_cmdline_args():
     parser = argparse.ArgumentParser(prog="nanosite")
     parser.add_argument("action", nargs="?", default="",
-                        help="options: build, clean, serve")
+                        help="options: build, serve, clean, delete")
     parser.add_argument("--port", action="store", dest="port",
                         default="8000", type=int, help="server port")
     parser.add_argument("-p", action="store", dest="site_dir",
@@ -418,16 +439,17 @@ def setup_blank_site(top, ctx, meta):
     with open(os.path.join(meta_dir, "meta.json"), "w") as f:
         json.dump(meta, f)
 
-def setup_site_interactive(top, ctx):
-    def prompt_YN(prompt):
-        full_prompt = prompt + " [y/n] "
+def prompt_YN(prompt):
+    full_prompt = prompt + " [y/n] "
+    print(full_prompt, end="")
+    x = input()
+    while x[0].lower() != "y" and x[0].lower() != "n":
+        print("Invalid option. Type 'y' for yes and 'n' for no.")
         print(full_prompt, end="")
         x = input()
-        while x[0].lower() != "y" and x[0].lower() != "n":
-            print("Invalid option. Type 'y' for yes and 'n' for no.")
-            print(full_prompt, end="")
-            x = input()
-        return x[0].lower() == "y"
+    return x[0].lower() == "y"
+
+def setup_site_interactive(top, ctx):
     if prompt_YN("Would you like to set up a site in this directory?"):
         print("Enter a title for your site: ", end="")
         title = input()
@@ -441,6 +463,14 @@ def setup_site_interactive(top, ctx):
         print("Success! Generated site.")
     else:
         print("Canceled.")
+
+def delete_site_dir(top):
+    for f in os.listdir(top):
+        path = os.path.join(top, f)
+        if os.path.isfile(path):
+            os.unlink(path)
+        elif os.path.isdir(path):
+            shutil.rmtree(path)
     
 def main():
     args = get_cmdline_args()
@@ -452,6 +482,16 @@ def main():
         print("Built site.")
     elif action == "clean" or action == "c":
         clean_output_dir(args.site_dir, args.output_dir)
+    elif action == "delete" or action == "d":
+        if is_in_nanosite_dir():
+            if prompt_YN("Are you sure you want to delete the site " +
+                         "in this directory?"):
+                delete_site_dir(args.site_dir)
+                print("Deleted site.")
+            else:
+                print("Canceled.")
+        else:
+            print("No site in this directory.")
     elif action == "serve" or action == "s":
         run_server(args.port, args.site_dir, ctx)
     elif action == "":
@@ -460,7 +500,9 @@ def main():
         else:
             setup_site_interactive(args.site_dir, ctx)
     else:
-        print("Unrecognized action. Valid actions: build, clean, serve.")
+        print("Unrecognized action. " +
+              "Valid actions: build, serve, clean, delete.")
 
-main()
+if __name__ == "__main__":
+    main()
     
