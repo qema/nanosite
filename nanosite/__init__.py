@@ -1,5 +1,6 @@
 import markdown
 import os
+import traceback
 import json
 import shutil
 import argparse
@@ -15,9 +16,14 @@ from html import escape as escape_HTML
 def ctx_fetch(ctx, line):
     key, params = (line.split(" ", 1) + [""])[:2]
     parts = key.split(".", 1)
-    if parts[0] in ctx:
+    is_attr = hasattr(ctx, parts[0])
+    if parts[0] in ctx or is_attr:
         if len(parts) == 1:
-            value = ctx[parts[0]]
+            value = None
+            if is_attr:  # try getting it as an attribute first
+                value = getattr(ctx, parts[0])
+            else:  # otherwise access dictionary entry
+                value = ctx[parts[0]]
             # if it's a macro, call it with parameter [ctx]
             if callable(value):
                 value = value(ctx, *tokenize_params(params))
@@ -61,6 +67,10 @@ def tokenize_params(params):
     return out
 
 template_cache = {}
+def clear_template_cache():
+    global template_cache
+    template_cache = {}
+    
 # get template from path (cached)
 def get_template(path):
     global template_cache
@@ -134,12 +144,13 @@ def fill_template(tmpl, ctx):
                 orig = None
                 if for_variable in ctx:
                     orig = ctx["for_variable"]
-                    
+
                 for item in for_collection:
                     ctx[for_variable] = item
                     out += fill_template(for_block_accum, ctx)
                 if orig is None:
-                    ctx.pop(for_variable)
+                    if for_variable in ctx:
+                        ctx.pop(for_variable)
                 else:
                     ctx[for_variable] = orig
             else:
@@ -316,7 +327,7 @@ def compile_dirtree(top, tree, ctx):
             mf = build_file(top, node, dict(ctx))
         else:
             mf = compile_dirtree(top, node, ctx)
-        modified_files.append(mf)
+        modified_files += mf
     return modified_files
             
 def load_meta(top, ctx):
@@ -338,6 +349,8 @@ def register_macros(top, ctx):
 
 # returns array of absolute paths of the files modified
 def make_site(top, ctx):
+    clear_template_cache()
+            
     ctx = load_meta(top, ctx)
     ctx = register_macros(top, ctx)
     tree = make_dirtree(top, top, ctx)
@@ -362,22 +375,26 @@ def is_in_nanosite_dir(path="."):
 def update(top, ctx):
     def last_update_time(walk, ignore=[]):
         for path, dirs, files in walk:
-            if dirs == []:
-                fs = [os.path.getmtime(os.path.join(path, f)) for f in files \
-                      if os.path.abspath(os.path.join(path, f)) not in ignore \
-                      and f[0] != "."]
-                return time.ctime(max(fs)) if fs != [] else 0
-            else:
-                return max(last_update_time(os.walk(os.path.join(path, d)),
-                                            ignore) for d in dirs)
+            fs = [os.path.getmtime(os.path.join(path, f)) for f in files \
+                  if os.path.abspath(os.path.join(path, f)) not in ignore \
+                  and f[0] != "."]
+            m = max(fs) if fs != [] else 0
+            m_sub = max(last_update_time(os.walk(os.path.join(path, d)),
+                                        ignore) for d in dirs) \
+                                        if dirs != [] else 0
+            return max(m, m_sub)
     needs_update = True
     last_t = None
     last_walk = None
     while True:
         if needs_update:
             needs_update = False
-            mf = make_site(top, ctx)
-            print("[" + str(datetime.now()) + "]", "Built site.")
+            try:
+                mf = make_site(top, ctx)
+                print("[" + str(datetime.now()) + "]", "Built site.")
+            except:
+                mf = []
+                traceback.print_exc()
         walk = sorted(os.walk(top))
         t = last_update_time(walk, mf)
         time.sleep(1)
@@ -433,7 +450,7 @@ def setup_blank_site(top, ctx, meta):
     meta_dir = os.path.join(top, ctx["MetaDir"])
     os.makedirs(meta_dir, exist_ok=True)
     with open(os.path.join(meta_dir, "master.tmpl"), "w") as f:
-        f.write("{{content}}")
+        f.write("{{{content}}}")
     with open(os.path.join(meta_dir, "macros.py"), "w") as f:
         f.write('# macro("example", lambda ctx: ctx_fetch(ctx, "site.title"))')
     with open(os.path.join(meta_dir, "meta.json"), "w") as f:
@@ -458,7 +475,7 @@ def setup_site_interactive(top, ctx):
         print("Enter the author name for your site: ", end="")
         author = input()
         meta = {"site": {"title": title, "tagline": tagline,
-                         "author": author, "url": "/"}}
+                         "author": author, "url": ""}}
         setup_blank_site(top, ctx, meta)
         print("Success! Generated site.")
     else:
@@ -478,8 +495,11 @@ def main():
 
     ctx = {"OutputDir": args.output_dir, "MetaDir": args.meta_dir}
     if action == "build" or action == "b":
-        make_site(args.site_dir, ctx)
-        print("Built site.")
+        if is_in_nanosite_dir():
+            make_site(args.site_dir, ctx)
+            print("Built site.")
+        else:
+            print("No site in this directory.")
     elif action == "clean" or action == "c":
         clean_output_dir(args.site_dir, args.output_dir)
     elif action == "delete" or action == "d":

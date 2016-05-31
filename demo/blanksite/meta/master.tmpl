@@ -1,0 +1,23 @@
+<html>
+  <head>
+    <title>{{site.title}}{{#if title}} - {{title}}{{#endif}}</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
+    <link rel="stylesheet" href="{{site.url}}/style.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+  </head>
+  <body>
+    <div class="container">
+      <header>
+	<h1><a href="{{site.url}}/">{{site.title}}</h1></a>
+	<small>{{site.tagline}}</small>
+	<nav>{{{nav}}}</nav>
+      </header>
+      <section>
+	{{{content}}}
+      </section>
+      <footer>
+	<small>Copyright {{#if date}}{{date.tm_year}}{{#endif}} {{site.author}}. Powered by <a href="https://github.com/qema/nanosite">nanosite</a>.</small>
+      </footer>
+    </div>
+  </body>
+</html>

@@ -1,0 +1,13 @@
+<article>
+  <h2>Archive</h2>
+  <ul>
+    {{#for post in newest unlimited posts}}
+    <li>
+      <a href="{{site.url}}/{{post.path}}">{{post.title}}</a> ({{format_date post.date}})
+    </li>
+    {{#endfor}}
+  </ul>
+</article>
+<section>
+  <a href="{{site.url}}/">Return to home.</a>
+</section>

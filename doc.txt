@@ -11,7 +11,7 @@ Template language (given context ctx).
 - {{#else}}: execute block if all previous if/elifs evaluated to false
 - {{#end if}}: end of if block
 
-- Keys can be nested with dot notation, e.g. if ctx = {"key": {"a": 3}}, then "key.a" will fetch the value 3
+- Keys can be nested with dot notation, e.g. if ctx = {"key": {"a": 3}}, then "key.a" will fetch the value 3 (this works for dictionary entries as well as object attributes)
 
 
 Site generation.
