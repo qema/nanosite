@@ -5,11 +5,11 @@ Template language (given context ctx).
   - {{key [param1 param2 .. paramN]}}: if ctx["key"] is a function, then it will be called with parameters [ctx], [param1], .. [paramN]. Parsing tries to figure out the appropriate type (supported: string, int, float). Use quotes ('"') around a parameter for strings with spaces.
 - {{{key}}}: replaced with ctx["key"], no escape (i.e. for HTML insertion)
 - {{#for x in key}}: if ctx["key"] is a collection, loop through its items
-- {{#end for}}: end of for loop
+- {{#endfor}}: end of for loop
 - {{#if key}}: execute block if ctx["key"] evaluates to True
 - {{#elif key}}: execute block if ctx["key"] evaluates to True and previous if/elifs evaluated to false
 - {{#else}}: execute block if all previous if/elifs evaluated to false
-- {{#end if}}: end of if block
+- {{#endif}}: end of if block
 
 - Keys can be nested with dot notation, e.g. if ctx = {"key": {"a": 3}}, then "key.a" will fetch the value 3 (this works for dictionary entries as well as object attributes)
 
@@ -28,8 +28,12 @@ Site generation.
   - Other files (besides template files) are copied to their respective output folders. Their content in the context directory tree is empty {}.
 
 
-Reserved context keywords. Directories cannot be named as these keywords, since their context entry would conflict.
-- content, meta, MetaDir, OutputDir
+Context namespace map.
+- Top-level directory names
+- Entries declared in meta/meta.json and meta/macros.py
+- Meta entries if current file is a Markdown file
+- Reserved context keywords. Directories cannot be named as these keywords, since their context entry would conflict.
+  - content, MetaDir, OutputDir
 
 
 Directory structure.
@@ -46,7 +50,7 @@ site/
     [Life]/
       [funstuff.md]
     [Work]/
-      specialized_template.tmpl
+      template.tmpl
       [meetings.md]
   [posts]/
     template.tmpl
