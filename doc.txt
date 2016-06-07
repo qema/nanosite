@@ -32,8 +32,8 @@ Context namespace map.
 - Top-level directory names
 - Entries declared in meta/meta.json and meta/macros.py
 - Meta entries if current file is a Markdown file
-- Reserved context keywords. Directories cannot be named as these keywords, since their context entry would conflict.
-  - content, MetaDir, OutputDir
+- "content": contains the content for the current template
+- "MetaDir", "OutputDir"
 
 
 Directory structure.
