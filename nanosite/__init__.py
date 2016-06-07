@@ -276,17 +276,15 @@ def add_dirtree_file(top, path, ctx, template_path):
         
         #ctx["content"] = html
         #ctx["meta"] = meta
-    elif ext.lower() == ".html+":
+    elif ext.lower() == ".html+" or ext.lower() == ".xml+":
         contents = open(path, "r").read()
         #local_out_html = fill_template(contents, ctx)
         out_dict = {"content": contents}#local_out_html}
  
-        new_ext = ".html"
+        new_ext = new_ext[:-1]#".html"
         #ctx["content"] = local_out_html
     elif ext.lower() == ".tmpl":
         out_dict = {}
-    elif ext.lower() == ".xml+":
-        new_ext = ".xml"
     else:  # copy file
         #relpath = os.path.relpath(path, top)
         #out_path = os.path.join(top, ctx["OutputDir"], relpath)
