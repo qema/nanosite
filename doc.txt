@@ -32,8 +32,9 @@ Site generation.
       - .xml+ files are compiled against themselves.
     b) .md, md+, and .html+ files are compiled against the local template, which is the template in the shallowest parent directory of the file that contains a template.tmpl file.
     c) .md, md+, and .html+ files are compiled against the master template.
-
   - Files with extensions other than .md, .md+, .html+ and .xml+ are simply copied to the output folder.
+
+
 Context namespace map.
 - Top-level directory names
 - Entries declared in meta/meta.json and meta/macros.py
