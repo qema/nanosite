@@ -17,4 +17,4 @@ nanosite uses Python 3. Download the repo and run setup.py install:
 ## How to Use
 To start a new site, simply run `nanosite` at the terminal, in the directory you want the site to be in. Follow the prompts to generate a blank site. Run `nanosite` again to serve your site, which you can view at http://localhost:8000/.
 
-See `doc.txt` for instructions on how to create your site, and the `demo/` folder for example sites.
+See `doc.txt` for instructions on how to create your site, and the `demo/` folder for example sites including a template blank site.
