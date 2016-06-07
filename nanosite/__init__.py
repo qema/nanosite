@@ -199,7 +199,7 @@ def fill_template(tmpl, ctx):
 def build_file(top, node, ctx):
     assert(node["is_file"])
     
-    path = node["input_path"]
+    path = os.path.join(top, node["input_path"])
     root, ext = os.path.splitext(path)
 
     modified_files = []
@@ -232,8 +232,19 @@ def build_file(top, node, ctx):
             # get/create output path
             f.write(out_html)
         modified_files = [os.path.abspath(out_path)]
-    elif ext.lower() == ".tmpl":
+    elif ext.lower() == ".tmpl":  # no action
         pass
+    elif ext.lower() == ".xml+":
+        tmpl = get_template(path)
+        out_html = fill_template(tmpl, ctx)
+        
+        relpath = os.path.relpath(root + ".xml", top)
+        out_path = os.path.join(top, ctx["OutputDir"], relpath)
+        os.makedirs(os.path.dirname(out_path), exist_ok=True)
+        
+        with open(out_path, "w") as f:
+            f.write(out_html)
+        modified_files = [os.path.abspath(out_path)]
     else:   # copy file (make hard link on unix)
         relpath = os.path.relpath(path, top)
         out_path = os.path.join(top, ctx["OutputDir"], relpath)
@@ -243,7 +254,7 @@ def build_file(top, node, ctx):
             if os.name == "nt":
                 shutil.copyfile(path, out_path)
             else:
-                if os.path.exists(out_path):
+                if os.path.lexists(out_path):
                     os.unlink(out_path)
                 os.link(path, out_path)
             modified_files = [os.path.abspath(out_path)]
@@ -274,6 +285,8 @@ def add_dirtree_file(top, path, ctx, template_path):
         #ctx["content"] = local_out_html
     elif ext.lower() == ".tmpl":
         out_dict = {}
+    elif ext.lower() == ".xml+":
+        new_ext = ".xml"
     else:  # copy file
         #relpath = os.path.relpath(path, top)
         #out_path = os.path.join(top, ctx["OutputDir"], relpath)
