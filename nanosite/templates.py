@@ -36,13 +36,14 @@ def tokenize_params(ctx, params):
                     token = token[:-1]
                     in_string = False
                 out[-1] += " " + token
-            elif token.isdecimal():  # int
-                out.append(int(token))
             else:
-                try:  # float
-                    out.append(float(token))
-                except ValueError:  # identifier (so get object from ctx)
-                    out.append(ctx_fetch(ctx, token))
+                try:  # int 
+                    out.append(int(token))
+                except ValueError:  # float
+                    try:
+                        out.append(float(token))
+                    except ValueError:  # identifier (so get object from ctx)
+                        out.append(ctx_fetch(ctx, token))
     return out
 
 template_cache = {}
