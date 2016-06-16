@@ -29,7 +29,7 @@ def ctx_fetch(ctx, line):
                 value = ctx[parts[0]]
             # if it's a macro, call it with parameter [ctx]
             if callable(value):
-                value = value(ctx, *tokenize_params(params))
+                value = value(ctx, *tokenize_params(ctx, params))
             return value
         else:
             return ctx_fetch(ctx[parts[0]], parts[1])
@@ -47,26 +47,27 @@ def compile_markdown(md_text):
         meta = {}
     return (html, meta)
 
-def tokenize_params(params):
+# get params from space-separated parameter list
+def tokenize_params(ctx, params):
     out = []
     in_string = False
     for token in params.split(" "):
         if token != "":
-            if token[0] == '"':
+            if token[0] == '"':  # begin string
                 in_string = True
                 out.append(token[1:])
-            elif in_string:
-                if token[-1] == '"':
+            elif in_string:  # continue string
+                if token[-1] == '"': 
                     token = token[:-1]
                     in_string = False
                 out[-1] += " " + token
-            elif token.isdecimal():
+            elif token.isdecimal():  # int
                 out.append(int(token))
             else:
-                try:
+                try:  # float
                     out.append(float(token))
-                except ValueError:
-                    out.append(token)
+                except ValueError:  # identifier (so get object from ctx)
+                    out.append(ctx_fetch(ctx, token))
     return out
 
 template_cache = {}
@@ -485,9 +486,9 @@ def setup_blank_site(top, ctx, meta):
     with open(os.path.join(meta_dir, "master.tmpl"), "w") as f:
         f.write("{{{content}}}")
     with open(os.path.join(meta_dir, "macros.py"), "w") as f:
-        f.write('# macro("example", lambda ctx: ctx_fetch(ctx, "site.title"))')
+        f.write('# macro("example", lambda ctx: ctx_fetch(ctx, "site.title"))\n')
     with open(os.path.join(meta_dir, "meta.json"), "w") as f:
-        json.dump(meta, f)
+        json.dump(meta, f, sort_keys=True, indent=4)
 
 def prompt_YN(prompt):
     full_prompt = prompt + " [y/n] "
