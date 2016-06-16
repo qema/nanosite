@@ -21,7 +21,6 @@ def ctx_fetch(ctx, line):
     else:
         return None
 
-
 # get params from space-separated parameter list
 def tokenize_params(ctx, params):
     out = []

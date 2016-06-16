@@ -75,5 +75,5 @@ def run_server(port, site_dir, ctx):
     thread.daemon = True
     thread.start()
     
-    print("Serving at port", port)
+    print("Serving at http://localhost:" + str(port) + "/")
     httpd.serve_forever()
