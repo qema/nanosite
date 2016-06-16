@@ -22,7 +22,7 @@ Site generation.
 2. Traverse the site directory and its subdirectories, creating corresponding built files in respective paths in OutputDir.
   - Pipeline: a) File -> b) Local template -> c) Master template
     a) Each file gets turned into a dictionary which is passed to the local template.
-      - Each file gets a context with a view of the directory tree, with names in lowercase and with file extensions removed.
+      - Each file gets a context with a view of the directory tree, with names in lowercase and with all periods replaced with underscores (so ex.txt -> ex_txt)
         - Directories are represented by dictionaries with key name equal to lowercased directory name
         - Each file in the directory tree has properties is_file = True, path (path of output file [with the extension of the output file], relative to site top), template_path (path of its local template), and date (time struct) which contains the last date modified.
 

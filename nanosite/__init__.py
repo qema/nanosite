@@ -12,6 +12,9 @@ import atexit
 from datetime import datetime
 from html import escape as escape_HTML
 
+def same_path(a, b):
+    return os.path.abspath(a).lower() == os.path.abspath(b).lower()
+
 # fetch key, possibly nested thru dot notation
 def ctx_fetch(ctx, line):
     key, params = (line.split(" ", 1) + [""])[:2]
@@ -250,12 +253,13 @@ def build_file(top, node, ctx):
         out_path = os.path.join(top, ctx["OutputDir"], relpath)
         os.makedirs(os.path.dirname(out_path), exist_ok=True)
         # copy if src and dest are different (i.e. OutputDir != ".")
-        if os.path.abspath(path) != os.path.abspath(out_path):
+        if not same_path(path, out_path):
             if os.name == "nt":
                 shutil.copyfile(path, out_path)
             else:
                 if os.path.lexists(out_path):
                     os.unlink(out_path)
+                #print("linking", path, "->", out_path)
                 os.link(path, out_path)
             modified_files = [os.path.abspath(out_path)]
     return modified_files
@@ -317,7 +321,7 @@ def make_dirtree(top, path, ctx, template_path=None):
                 rp = os.path.abspath(subpath)
                 md = os.path.join(top, ctx["MetaDir"])
                 od = os.path.join(top, ctx["OutputDir"])
-                if rp != os.path.abspath(md) and rp != os.path.abspath(od):
+                if not (same_path(rp, md) or same_path(rp, od)):
                     dirs.append((subdir, subpath))
 
     for short_path, full_path in dirs:
@@ -325,7 +329,8 @@ def make_dirtree(top, path, ctx, template_path=None):
         tree[path_name] = make_dirtree(top, full_path, ctx, template_path)
         
     for short_path, full_path in files:
-        name = os.path.splitext(short_path)[0].lower()  # remove extension
+        name = short_path.replace(".", "_")
+        if name in tree: name = name.replace("_", "__")
         tree[name] = add_dirtree_file(top, full_path, dict(ctx), template_path)
 
     return tree
@@ -378,21 +383,26 @@ def is_in_nanosite_dir(path="."):
         return True
     else:
         up = os.path.join("..", path)
-        if os.path.abspath(up) == os.path.abspath(path):  # reached root
+        if same_path(up, path):  # reached root
             return False
         else:
             return is_in_nanosite_dir(up)
-
-def update(top, ctx):
-    def last_update_time(walk, ignore=[]):
+ 
+def update(top, ctx, handler):
+    def last_update_time(walk, ignore=[], last_t=None):
         for path, dirs, files in walk:
-            fs = [os.path.getmtime(os.path.join(path, f)) for f in files \
-                  if os.path.abspath(os.path.join(path, f)) not in ignore \
+            fs = [(os.path.join(path, f),
+                   os.path.getmtime(os.path.join(path, f))) for f in files \
+                  if list(filter(lambda x: same_path(x, os.path.join(path, f)),
+                                 ignore)) == [] \
                   and f[0] != "."]
+            for n, t in fs:
+                if last_t is not None and t > last_t: print(n, "modified")
+            fs = list(zip(*fs))[1] if fs != [] else []
             m = max(fs) if fs != [] else 0
             m_sub = max(last_update_time(os.walk(os.path.join(path, d)),
-                                        ignore) for d in dirs) \
-                                        if dirs != [] else 0
+                                         ignore, last_t) for d in dirs) \
+                                         if dirs != [] else 0
             return max(m, m_sub)
     needs_update = True
     last_t = None
@@ -402,12 +412,15 @@ def update(top, ctx):
             needs_update = False
             try:
                 mf = make_site(top, ctx)
+                handler.error = None
                 print("[" + str(datetime.now()) + "]", "Built site.")
             except:
+                last_t = None
                 mf = []
                 traceback.print_exc()
+                handler.error = traceback.format_exc()
         walk = sorted(os.walk(top))
-        t = last_update_time(walk, mf)
+        t = last_update_time(walk, mf, last_t)
         time.sleep(1)
         # file updated or dirtree changed
         if last_t is not None and (t != last_t or walk != last_walk):
@@ -417,19 +430,28 @@ def update(top, ctx):
 
 def run_server(port, site_dir, ctx):
     output_dir = ctx["OutputDir"]
-    
-    # start update thread
-    thread = threading.Thread(target=update, args=(site_dir, ctx))
-    thread.daemon = True
-    thread.start()
 
     # start server
     class RequestHandler(http.server.SimpleHTTPRequestHandler):
+        def do_GET(self):
+            if hasattr(self, "error") and self.error is not None:
+                self.send_response(200, 'OK')
+                self.send_header('Content-type', 'html')
+                self.end_headers()
+                self.wfile.write(bytes(self.error, 'UTF-8'))
+            else:
+                super().do_GET()
         def translate_path(self, path):
             return os.path.join(site_dir, output_dir, path[1:])
     handler = RequestHandler
     httpd = socketserver.TCPServer(("", port), handler)
     atexit.register(lambda: httpd.shutdown())
+    
+    # start update thread
+    thread = threading.Thread(target=update, args=(site_dir, ctx, handler))
+    thread.daemon = True
+    thread.start()
+    
     print("Serving at port", port)
     httpd.serve_forever()
 
