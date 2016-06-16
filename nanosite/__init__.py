@@ -488,7 +488,7 @@ def setup_blank_site(top, ctx, meta):
     with open(os.path.join(meta_dir, "macros.py"), "w") as f:
         f.write('# macro("example", lambda ctx: ctx_fetch(ctx, "site.title"))\n')
     with open(os.path.join(meta_dir, "meta.json"), "w") as f:
-        json.dump(meta, f, sort_keys=True, indent=4)
+        json.dump(meta, f, sort_keys=True, indent=2)
 
 def prompt_YN(prompt):
     full_prompt = prompt + " [y/n] "
