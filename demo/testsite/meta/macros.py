@@ -1,22 +1,23 @@
-def format_date(ctx, d):
-    date = ctx_fetch(ctx, d)
+def format_date(ctx, date):
     mo = ["Jan", "Feb", "Mar", "Apr", "May", "Jun",
           "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"][date.tm_mon - 1]
     return str(date.tm_mday) + " " + mo + " " + str(date.tm_year)
 macro("format_date", format_date)
 
 def newest(ctx, count, folder):
-    s = sorted([x for x in ctx_fetch(ctx, folder).values() if "is_file" in x],
+    unlimited = type(count) == str and count.lower() == "unlimited"
+    s = sorted([x for x in folder.values() if "is_file" in x],
                key=lambda x: x["date"],
                reverse=True)
-    return s[:count]
+    return s if unlimited else s[:count]
 macro("newest", newest)
 
 def make_menu(ctx, start=True, site_url=None):
+    out = "<ul>"
     if start:
         site_url = ctx["site"]["url"]
         ctx = ctx["pages"]
-    out = "<ul>"
+        out += "<li><a href='" + site_url + "/'>Home</a></li>"
     for item in sorted(ctx):
         if "is_file" in ctx[item]:
             if "title" in ctx[item]:
@@ -29,4 +30,4 @@ def make_menu(ctx, start=True, site_url=None):
             out += "</li>"
     out += "</ul>"
     return out
-macro("menu", make_menu)
+macro("nav", make_menu)
