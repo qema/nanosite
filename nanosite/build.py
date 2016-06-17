@@ -78,8 +78,8 @@ def add_dirtree_file(top, path, ctx, template_path):
     new_ext = ext
     if ext.lower() == ".md" or ext.lower() == ".md+":
         html, meta = util.compile_markdown(open(path, "r").read())
-        if ext.lower() == ".md+":
-            html = templates.fill_template(html, ctx)
+        #if ext.lower() == ".md+":
+        #    html = templates.fill_template(html, ctx)
         out_dict = {"content": html}
         for k in meta:
             out_dict[k] = meta[k]
