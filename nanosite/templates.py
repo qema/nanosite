@@ -88,7 +88,7 @@ def fill_template(tmpl, ctx):
         key, rest = get_chunk(rest, "}}")
         key = key.strip()
         cmd = key.split()
-        cmd[0] = cmd[0].lower()
+        if cmd != []: cmd[0] = cmd[0].lower()
 
         #print("{{", key, "}}", rest, seeking, seek_depth, depth_if)
         #print()
