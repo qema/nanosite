@@ -87,7 +87,8 @@ def fill_template(tmpl, ctx):
             for_block_accum += cur
         key, rest = get_chunk(rest, "}}")
         key = key.strip()
-        cmd = key.lower().split()
+        cmd = key.split()
+        cmd[0] = cmd[0].lower()
 
         #print("{{", key, "}}", rest, seeking, seek_depth, depth_if)
         #print()

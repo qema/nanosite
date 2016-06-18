@@ -42,7 +42,7 @@ def update(top, ctx, handler):
                 mf = []
                 traceback.print_exc()
                 handler.error = traceback.format_exc()
-        walk = sorted(os.walk(top))
+        walk = sorted(list(os.walk(top)))
         t = last_update_time(walk, mf, last_t)
         time.sleep(1)
         # file updated or dirtree changed
