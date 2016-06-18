@@ -29,10 +29,10 @@ def get_cmdline_args():
     parser = argparse.ArgumentParser(prog="nanosite")
     parser.add_argument("action", nargs="?", default="",
                         help="options: build, serve, clean, delete")
-    parser.add_argument("--port", action="store", dest="port",
-                        default="8000", type=int, help="server port")
-    parser.add_argument("-p", action="store", dest="site_dir",
-                        default=os.getcwd(), help="site directory")
+    parser.add_argument("--port", "-p", action="store", dest="port",
+                        default="8000", type=int, help="set server port")
+    parser.add_argument("-s", action="store", dest="site_dir",
+                        default=os.getcwd(), help="specify site directory")
     parser.add_argument("-o", action="store", dest="output_dir",
                         default="output/", help="set output directory")
     parser.add_argument("-m", action="store", dest="meta_dir",
@@ -88,9 +88,11 @@ def main():
     args = get_cmdline_args()
     action = args.action.lower()
 
+    site_exists = is_in_nanosite_dir(args.site_dir)
+
     ctx = {"OutputDir": args.output_dir, "MetaDir": args.meta_dir}
     if action == "build" or action == "b":
-        if is_in_nanosite_dir():
+        if site_exists:
             build.make_site(args.site_dir, ctx)
             print("Built site.")
         else:
@@ -98,7 +100,7 @@ def main():
     elif action == "clean" or action == "c":
         clean_output_dir(args.site_dir, args.output_dir)
     elif action == "delete" or action == "d":
-        if is_in_nanosite_dir():
+        if site_exists:
             if prompt_YN("Are you sure you want to delete the site " +
                          "in this directory?"):
                 delete_site_dir(args.site_dir)
@@ -110,7 +112,7 @@ def main():
     elif action == "serve" or action == "s":
         server.run_server(args.port, args.site_dir, ctx)
     elif action == "":
-        if is_in_nanosite_dir():  # default action: run server
+        if site_exists:  # default action: run server
             server.run_server(args.port, args.site_dir, ctx)
         else:
             setup_site_interactive(args.site_dir, ctx)
