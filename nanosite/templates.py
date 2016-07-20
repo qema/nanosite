@@ -8,10 +8,10 @@ def ctx_fetch(ctx, line):
     if parts[0] in ctx or is_attr:
         if len(parts) == 1:
             value = None
-            if is_attr:  # try getting it as an attribute first
-                value = getattr(ctx, parts[0])
-            else:  # otherwise access dictionary entry
+            try:  # try getting it as a dictionary entry first
                 value = ctx[parts[0]]
+            except:  # otherwise try getting it as an attribute
+                value = getattr(ctx, parts[0])
             # if it's a macro, call it with parameter [ctx]
             if callable(value):
                 value = value(ctx, *tokenize_params(ctx, params))
@@ -61,6 +61,7 @@ def get_template(path):
         return tmpl
 
 # fill template according to rules in doc.txt
+# ctx is modified according to new variable bindings
 def fill_template(tmpl, ctx):
     #print("FILLING TEMPLATE ", tmpl, "WITH CONTEXT", ctx)
     
@@ -74,9 +75,11 @@ def fill_template(tmpl, ctx):
     seek_depth = 0
     depth_if = 0
     depth_for = 0
-    for_block_accum = ""
+    block_accum = ""
     for_variable = ""
     for_collection = None
+    macro_name = ""
+    macro_param_names = []
     while len(rest) > 0:
         cur, rest = get_chunk(rest, "{{")
         #print("}}", cur, "{{", rest, seeking, seek_depth, depth_if)
@@ -84,11 +87,11 @@ def fill_template(tmpl, ctx):
         if seeking is None:
             out += cur
         else:
-            for_block_accum += cur
+            block_accum += cur
         key, rest = get_chunk(rest, "}}")
         key = key.strip()
         cmd = key.split()
-        if cmd != []: cmd[0] = cmd[0].lower()
+        if cmd: cmd[0] = cmd[0].lower()
 
         #print("{{", key, "}}", rest, seeking, seek_depth, depth_if)
         #print()
@@ -96,6 +99,7 @@ def fill_template(tmpl, ctx):
 
         if seeking is not None:
             run_for_block = False
+            create_macro = False
             if cmd[0] == "#if":
                 depth_if += 1
             elif cmd[0] == "#else":
@@ -119,22 +123,38 @@ def fill_template(tmpl, ctx):
                     seeking = None
                     run_for_block = True
                 depth_for -= 1
+            elif cmd[0] == "#macro":
+                raise Exception("#macro declared inside of another block")
+            elif cmd[0] == "#endmacro":
+                seeking = None
+                create_macro = True
                     
             if run_for_block:
-                orig = None
+                orig = None  # save original context binding
                 if for_variable in ctx:
                     orig = ctx["for_variable"]
 
                 for item in for_collection:
                     ctx[for_variable] = item
-                    out += fill_template(for_block_accum, ctx)
-                if orig is None:
+                    out += fill_template(block_accum, ctx)
+                if orig is None:  # restore original context binding
                     if for_variable in ctx:
                         ctx.pop(for_variable)
                 else:
                     ctx[for_variable] = orig
+            elif create_macro:
+                def macro_func(ctx, *params):
+                    origs = {}  # saves original bindings
+                    for name, value in zip(macro_param_names, params):
+                        if name in ctx: origs[name] = ctx[name]
+                        ctx[name] = value
+                    out = fill_template(block_accum, ctx)
+                    for key in origs:  # restore bindings
+                        ctx[key] = origs[key]
+                    return out
+                ctx[macro_name] = macro_func
             else:
-                for_block_accum += "{{" + key + "}}"
+                block_accum += "{{" + key + "}}"
         else:
             if cmd == [] or cmd[0] == "":
                 pass
@@ -152,13 +172,18 @@ def fill_template(tmpl, ctx):
                 depth_if -= 1
             elif cmd[0] == "#for":
                 depth_for += 1
-                for_block_accum = ""
+                block_accum = ""
                 seeking = {"#endfor"}
                 seek_depth = depth_for
                 for_variable = cmd[1]
                 for_collection = ctx_fetch(ctx, " ".join(cmd[3:]))
             elif cmd[0] == "#endfor":
                 depth_for -= 1
+            elif cmd[0] == "#macro":
+                block_accum = ""
+                seeking = {"#endmacro"}
+                macro_name = cmd[1]
+                macro_param_names = cmd[2:]
             else:
                 if key[0] == "{":
                     val = str(ctx_fetch(ctx, key[1:]))
@@ -166,6 +191,7 @@ def fill_template(tmpl, ctx):
                 else:
                    val = escape_HTML(str(ctx_fetch(ctx, key)))
                 out += fill_template(val, ctx)
+                
     if depth_if > 0:
         raise Exception("#if without #endif")
     elif depth_if < 0:

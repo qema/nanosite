@@ -177,14 +177,24 @@ def register_macros(top, ctx):
 # returns array of absolute paths of the files modified
 def make_site(top, ctx):
     templates.clear_template_cache()
-            
+
+    # load meta variables
     ctx = load_meta(top, ctx)
+
+    # register macros
     ctx = register_macros(top, ctx)
+
+    # create dirtree
     tree = make_dirtree(top, top, ctx)
     
     # copy dirtree to context
     for k in tree:
         ctx[k] = tree[k]
         
+    # fill master template in order to register global macros
+    master_tmpl_path = os.path.join(top, ctx["MetaDir"], "master.tmpl")
+    templates.fill_template(templates.get_template(master_tmpl_path), ctx)
+
+    # compile dirtree
     mf = compile_dirtree(top, tree, ctx)
     return mf

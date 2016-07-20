@@ -1,8 +1,10 @@
-from nanosite import *
+from templates import fill_template
 
 # fill template
 assert fill_template("hello {{key}}!", {"key": "world"}) == "hello world!"
 assert(fill_template("{{a.b.c}}", {"a": {"b": {"c": 3}}}) == "3")
+print(fill_template("{{#macro test a}}{{#if a}}A{{#else}}B{{#endif}}{{#endmacro}}{{test 1}}{{test 0}}", {}))
+assert(fill_template("{{#macro test a}}{{#if a}}A{{#else}}B{{#endif}}{{#endmacro}}{{test 1}}{{test 0}}", {}) == "AB")
 assert(fill_template("{{#for x in items}}{{x}}.{{#endfor}}", {"items": [1, 2, 3]}) == "1.2.3.")
 assert(fill_template("{{#if no}}nope{{#else}}{{#for x in items}}{{x}}.{{#endfor}}{{#endif}}", {"no": False, "items": [1, 2, 3]}) == "1.2.3.")
 assert(fill_template("{{#if a}}A{{#if b}}B{{#elif c}}C{{#else}}(!B!C){{#endif}}(Y){{#else}}(!A){{#endif}}", {"a": True, "b": True, "c": True}) == "AB(Y)")

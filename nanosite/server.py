@@ -51,7 +51,7 @@ def update(top, ctx, handler):
                 handler.error = traceback.format_exc()
         walk = sorted(list(os.walk(top)))
         t = last_update_time(walk, mf, last_t)
-        time.sleep(1)
+        time.sleep(0.5)
         # file updated or dirtree changed
         if last_t is not None and (t != last_t or walk != last_walk):
             needs_update = True

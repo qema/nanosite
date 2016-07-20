@@ -10,6 +10,9 @@ Template language (given context ctx).
 - {{#elif key}}: execute block if ctx["key"] evaluates to True and previous if/elifs evaluated to false
 - {{#else}}: execute block if all previous if/elifs evaluated to false
 - {{#endif}}: end of if block
+- {{#macro name [param1 param2 .. paramN]}}: begins a macro block. ctx[name] becomes a function that fills in the contents of the macro block using the given parameters as additional context variables, and returns the result (like a template)
+  - Macros cannot be nested inside of any other block
+- {{#endmacro}}: end of macro block
 
 - Keys can be nested with dot notation, e.g. if ctx = {"key": {"a": 3}}, then "key.a" will fetch the value 3 (this works for dictionary entries as well as object attributes)
 
@@ -19,6 +22,7 @@ Site generation.
   - meta.json meta [key: value] pairs will be directly added to the context
   - macros.py is executed. The function [macro(s, fun)] is exposed, where [s] is the name of the context key that will invoke the macro, and [fun] is a lambda expression [lambda: ctx [, params] = ...] that takes in context [ctx] and outputs any stringable value. When the macro is invoked through {{key}}, the lambda expression is called with the current file's context as the parameter. These macros are all added to the context. Ex: macro("example", lambda: ctx = fetch("site.url")) declares a macro that fetches the site.url property from the context when invoked with {{example}}.
     - fetch(ctx, key) is also exposed, which allows access of context variables through dot notation. Ex: fetch(ctx, "site.url").
+  - Master template is run once in order to register global macros (the site directory is registered in the context for these macros to access). The output is not kept.
 2. Traverse the site directory and its subdirectories, creating corresponding built files in respective paths in OutputDir.
   - Pipeline: a) File -> b) Local template -> c) Master template
     a) Each file gets turned into a dictionary which is passed to the local template.
