@@ -20,7 +20,7 @@ Template language (given context ctx).
   - As with #for, [value] can span spaces, allowing for macro calls
 
 - Keys can be nested with dot notation, e.g. if ctx = {"key": {"a": 3}}, then "key.a" will fetch the value 3 (this works for dictionary entries as well as object attributes)
-- Delimiters can be escaped with a backlash: \{{ produces {{, and \}} produces }}
+- Delimiters can be escaped with a backlash, and the template compiler will ignore them. In the site generator, \{{ will output {{, and \}} will output }}
 
 
 Site generation.
