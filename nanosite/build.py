@@ -64,10 +64,11 @@ def build_file(top, node, ctx):
             if os.name == "nt":
                 shutil.copyfile(path, out_path)
             else:
-                if os.path.lexists(out_path):
-                    os.unlink(out_path)
-                #print("linking", path, "->", out_path)
-                os.link(path, out_path)
+                # only copy file if it's new or newly modified 
+                if not os.path.lexists(out_path) or \
+                   os.path.getmtime(path) > os.path.getmtime(out_path):
+                    print("copying", path, "->", out_path)
+                    shutil.copyfile(path, out_path)
             modified_files = [os.path.abspath(out_path)]
     return modified_files
     
@@ -162,8 +163,11 @@ def load_meta(top, ctx):
     return ctx
     
 def register_macros(top, ctx):
+    # functions to be exposed to macros.py
     def macro(s, fun):
         ctx[s] = fun
+    def fetch(ctx, key):
+        return util.ctx_fetch(ctx, key)
     pgm_path = os.path.join(top, ctx["MetaDir"], "macros.py")
     if os.path.isfile(pgm_path):
         pgm = open(pgm_path, "r").read()

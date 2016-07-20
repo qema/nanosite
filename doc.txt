@@ -17,8 +17,8 @@ Template language (given context ctx).
 Site generation.
 1. Create a context with meta.json (which contains a dictionary) and macros.py
   - meta.json meta [key: value] pairs will be directly added to the context
-  - macros.py is executed. The function [macro(s, fun)] is exposed, where [s] is the name of the context key that will invoke the macro, and [fun] is a lambda expression [lambda: ctx [, params] = ...] that takes in context [ctx] and outputs any stringable value. When the macro is invoked through {{key}}, the lambda expression is called with the current file's context as the parameter. These macros are all added to the context. Ex: macro("example", lambda: ctx = ctx_fetch("site.url")) declares a macro that fetches the site.url property from the context when invoked with {{example}}.
-    - ctx_fetch(ctx, key) is also exposed, which allows access of context variables through dot notation. Ex: ctx_fetch(ctx, "site.url").
+  - macros.py is executed. The function [macro(s, fun)] is exposed, where [s] is the name of the context key that will invoke the macro, and [fun] is a lambda expression [lambda: ctx [, params] = ...] that takes in context [ctx] and outputs any stringable value. When the macro is invoked through {{key}}, the lambda expression is called with the current file's context as the parameter. These macros are all added to the context. Ex: macro("example", lambda: ctx = fetch("site.url")) declares a macro that fetches the site.url property from the context when invoked with {{example}}.
+    - fetch(ctx, key) is also exposed, which allows access of context variables through dot notation. Ex: fetch(ctx, "site.url").
 2. Traverse the site directory and its subdirectories, creating corresponding built files in respective paths in OutputDir.
   - Pipeline: a) File -> b) Local template -> c) Master template
     a) Each file gets turned into a dictionary which is passed to the local template.
@@ -32,6 +32,10 @@ Site generation.
     b) .md, md+, and .html+ files are compiled against the local template, which is the template in the shallowest parent directory of the file that contains a template.tmpl file.
     c) .md, md+, and .html+ files are compiled against the master template.
   - Files with extensions other than .md, .md+, .html+ and .xml+ are simply copied to the output folder.
+
+
+Publishing.
+Calling "nanosite publish" will run the publish script in the meta directory: either "publish.bat" on Windows, or "publish" on other platforms. You must customize the script to fit your needs.
 
 
 Context namespace map.

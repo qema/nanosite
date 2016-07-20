@@ -4,7 +4,6 @@ import nanosite.server as server
 
 import os
 import json
-import shutil
 import argparse
 
 def is_in_nanosite_dir(path="."):
@@ -16,19 +15,11 @@ def is_in_nanosite_dir(path="."):
             return False
         else:
             return is_in_nanosite_dir(up)
- 
-def clean_output_dir(site_dir, output_dir):
-    path = os.path.join(site_dir, output_dir)
-    if os.path.isdir(path):
-        shutil.rmtree(path)
-        print("Cleaned output directory.")
-    else:
-        print("Nothing to clean.")
 
 def get_cmdline_args():
     parser = argparse.ArgumentParser(prog="nanosite")
     parser.add_argument("action", nargs="?", default="",
-                        help="options: build, serve, clean, delete")
+                        help="options: build, serve, publish, clean, delete")
     parser.add_argument("--port", "-p", action="store", dest="port",
                         default="8000", type=int, help="set server port")
     parser.add_argument("-s", action="store", dest="site_dir",
@@ -50,6 +41,15 @@ def setup_blank_site(top, ctx, meta):
         f.write('# macro("example", lambda ctx: ctx_fetch(ctx, "site.title"))\n')
     with open(os.path.join(meta_dir, "meta.json"), "w") as f:
         json.dump(meta, f, sort_keys=True, indent=2)
+    if os.name == "nt":
+        with open(os.path.join(meta_dir, "publish.bat"), "w") as f:
+            f.write("rem This script is run during `nanosite publish`\n")
+    else:
+        publish_script_path = os.path.join(meta_dir, "publish")
+        with open(publish_script_path, "w") as f:
+            f.write("#!/bin/bash\n")
+            f.write("# This script is run during `nanosite publish`\n")
+        os.chmod(publish_script_path, 0o744)  # make executable
 
 def prompt_YN(prompt):
     full_prompt = prompt + " [y/n] "
@@ -76,14 +76,6 @@ def setup_site_interactive(top, ctx):
     else:
         print("Canceled.")
 
-def delete_site_dir(top):
-    for f in os.listdir(top):
-        path = os.path.join(top, f)
-        if os.path.isfile(path):
-            os.unlink(path)
-        elif os.path.isdir(path):
-            shutil.rmtree(path)
-    
 def main():
     args = get_cmdline_args()
     action = args.action.lower()
@@ -98,17 +90,19 @@ def main():
         else:
             print("No site in this directory.")
     elif action == "clean" or action == "c":
-        clean_output_dir(args.site_dir, args.output_dir)
+        util.clean_output_dir(args.site_dir, args.output_dir)
     elif action == "delete" or action == "d":
         if site_exists:
             if prompt_YN("Are you sure you want to delete the site " +
                          "in this directory?"):
-                delete_site_dir(args.site_dir)
+                util.delete_site_dir(args.site_dir)
                 print("Deleted site.")
             else:
                 print("Canceled.")
         else:
             print("No site in this directory.")
+    elif action == "publish" or action == "p":
+        util.publish_site(args.site_dir, args.meta_dir)
     elif action == "serve" or action == "s":
         server.run_server(args.port, args.site_dir, ctx)
     elif action == "":
@@ -118,7 +112,7 @@ def main():
             setup_site_interactive(args.site_dir, ctx)
     else:
         print("Unrecognized action. " +
-              "Valid actions: build, serve, clean, delete.")
+              "Valid actions: build, serve, publish, clean, delete.")
 
 if __name__ == "__main__":
     main()

@@ -12,21 +12,28 @@ import atexit
 
 def update(top, ctx, handler):
     def last_update_time(walk, ignore=[], last_t=None):
+        # getmtime may fail if files changed since os.walk call
+        def mtime_or_zero(path):
+            try:
+                return os.path.getmtime(path)
+            except FileNotFoundError:
+                return 0
+            
+        cur_max = 0
         for path, dirs, files in walk:
             fs = [(os.path.join(path, f),
-                   os.path.getmtime(os.path.join(path, f))) for f in files \
+                   mtime_or_zero(os.path.join(path, f))) for f in files \
                   if list(filter(lambda x:
                                  util.same_path(x, os.path.join(path, f)),
                                  ignore)) == [] \
                   and f[0] != "."]
             for n, t in fs:
                 if last_t is not None and t > last_t: print(n, "modified")
-            fs = list(zip(*fs))[1] if fs != [] else []
-            m = max(fs) if fs != [] else 0
-            m_sub = max(last_update_time(os.walk(os.path.join(path, d)),
-                                         ignore, last_t) for d in dirs) \
-                                         if dirs != [] else 0
-            return max(m, m_sub)
+            if fs != []:
+                fs = list(zip(*fs))[1]
+                cur_max = max(cur_max, max(fs))
+        return cur_max
+    
     needs_update = True
     last_t = None
     last_walk = None
