@@ -30,19 +30,23 @@ def ctx_fetch(ctx, line):
         return None
 
 # get params from space-separated parameter list
-def tokenize_params(ctx, params):
+# if greedy, then context grabs consume all of the remaining parameters
+#   (this is for macro calls with parameters)
+def tokenize_params(ctx, params, greedy=False):
     out = []
     in_string = False
-    for token in params.split(" "):
+    tokens = params.split(" ")
+    for i, token in enumerate(tokens):
         if token != "":
             if token[0] == '"':  # begin string
                 in_string = True
-                out.append(token[1:])
-            elif in_string:  # continue string
+                token = token[1:]
+                out.append("")
+            if in_string:  # continue string
                 if token[-1] == '"': 
                     token = token[:-1]
                     in_string = False
-                out[-1] += " " + token
+                out[-1] += token + (" " if in_string else "")
             else:
                 try:  # int 
                     out.append(int(token))
@@ -50,7 +54,9 @@ def tokenize_params(ctx, params):
                     try:
                         out.append(float(token))
                     except ValueError:  # identifier (so get object from ctx)
+                        if greedy: token = " ".join(tokens[i:])
                         out.append(ctx_fetch(ctx, token))
+                        if greedy: break
     return out
 
 template_cache = {}
@@ -71,8 +77,9 @@ def get_template(path):
 # fill template according to rules in doc.txt
 # ctx is modified according to new variable bindings
 def fill_template(tmpl, ctx):
-    #print("FILLING TEMPLATE ", tmpl, "WITH CONTEXT", ctx)
-    
+    def make_define(ctx, cmd):
+        ctx[cmd[1]] = tokenize_params(ctx, " ".join(cmd[2:]), greedy=True)[0]
+                
     # get part before delim and part after
     def get_chunk(s, delim):
         #a = s.split(delim, 1)
@@ -138,8 +145,7 @@ def fill_template(tmpl, ctx):
                 seeking = None
                 create_macro = True
             elif cmd[0] == "#define":
-                raise Exception("#define inside of a block")
-                    
+                make_define(ctx, cmd)
             if run_for_block:
                 orig = None  # save original context binding
                 if for_variable in ctx:
@@ -196,7 +202,7 @@ def fill_template(tmpl, ctx):
                 macro_name = cmd[1]
                 macro_param_names = cmd[2:]
             elif cmd[0] == "#define":
-                ctx[cmd[1]] = ctx_fetch(ctx, " ".join(cmd[2:]))[0]
+                make_define(ctx, cmd)
             else:
                 if key[0] == "{":
                     val = str(ctx_fetch(ctx, key[1:]))

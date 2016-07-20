@@ -15,8 +15,7 @@ Template language (given context ctx).
   - Macros cannot be nested inside of any other block
   - Within a file, macros must be declared before they are used
 - {{#endmacro}}: end of macro block
-- {{#define name value}}: sets ctx[name] to [value] where value is a literal (int, string, float) or identifier. 
-  - Definitions cannot be inside of any block
+- {{#define name value}}: sets ctx[name] to [value] where value is a literal (int, string, float) or identifier.
   - As with #for, [value] can span spaces, allowing for macro calls
 
 - Keys can be nested with dot notation, e.g. if ctx = {"key": {"a": 3}}, then "key.a" will fetch the value 3 (this works for dictionary entries as well as object attributes)
