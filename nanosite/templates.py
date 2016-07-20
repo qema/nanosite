@@ -1,4 +1,12 @@
+import re
 from html import escape as escape_HTML
+
+# escape templating delimiters
+def escape_delimiters(s):
+    return s.replace("{{", "\\{{").replace("}}", "\\}}")
+
+def unescape_delimiters(s):
+    return s.replace("\\{{", "{{").replace("\\}}", "}}")
 
 # fetch key, possibly nested thru dot notation
 def ctx_fetch(ctx, line):
@@ -67,7 +75,8 @@ def fill_template(tmpl, ctx):
     
     # get part before delim and part after
     def get_chunk(s, delim):
-        a = s.split(delim, 1)
+        #a = s.split(delim, 1)
+        a = re.split("(?<!\\\\)" + delim, s, 1) # eg match {{ but not \{{
         return (a[0], "") if len(a) <= 1 else a
     rest = tmpl
     out = ""

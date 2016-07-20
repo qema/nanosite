@@ -34,6 +34,9 @@ def build_file(top, node, ctx):
         ctx["content"] = local_out_html
         out_html = templates.fill_template(master_tmpl, ctx)
 
+        # remove escape symbols on delimiters
+        out_html = templates.unescape_delimiters(out_html)
+
         relpath = os.path.relpath(root + ".html", top)
         out_path = os.path.join(top, ctx["OutputDir"], relpath)
         os.makedirs(os.path.dirname(out_path), exist_ok=True)
@@ -47,6 +50,9 @@ def build_file(top, node, ctx):
     elif ext.lower() == ".xml+":
         tmpl = templates.get_template(path)
         out_html = templates.fill_template(tmpl, ctx)
+        
+        # remove escape symbols on delimiters
+        out_html = templates.unescape_delimiters(out_html)
         
         relpath = os.path.relpath(root + ".xml", top)
         out_path = os.path.join(top, ctx["OutputDir"], relpath)
@@ -79,8 +85,8 @@ def add_dirtree_file(top, path, ctx, template_path):
     new_ext = ext
     if ext.lower() == ".md" or ext.lower() == ".md+":
         html, meta = util.compile_markdown(open(path, "r").read())
-        #if ext.lower() == ".md+":
-        #    html = templates.fill_template(html, ctx)
+        if ext.lower() == ".md":  # don't template plain .md files
+            html = templates.escape_delimiters(html)
         out_dict = {"content": html}
         for k in meta:
             out_dict[k] = meta[k]

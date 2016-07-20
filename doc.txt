@@ -18,6 +18,7 @@ Template language (given context ctx).
   - Definitions cannot be inside of any block
 
 - Keys can be nested with dot notation, e.g. if ctx = {"key": {"a": 3}}, then "key.a" will fetch the value 3 (this works for dictionary entries as well as object attributes)
+- Delimiters can be escaped with a backlash: \{{ produces {{, and \}} produces }}
 
 
 Site generation.
@@ -33,7 +34,7 @@ Site generation.
         - Directories are represented by dictionaries with key name equal to lowercased directory name
         - Each file in the directory tree has properties is_file = True, path (path of output file [with the extension of the output file], relative to site top), template_path (path of its local template), and date (time struct) which contains the last date modified.
 
-      - .md/.md+ files become {"content": [html-compiled content], [meta-key-1]: [meta-value-1], ...} where the meta entries come from the Markdown meta section.
+      - .md/.md+ files become {"content": [html-compiled content], [meta-key-1]: [meta-value-1], ...} where the meta entries come from the Markdown meta section. For .md files, escape delimiters so they aren't compiled as templates.
       - .html+ files become {"content": [c]} where c is the file's contents.
       - .xml+ files are compiled against themselves.
     b) .md, md+, and .html+ files are compiled against the local template, which is the template in the shallowest parent directory of the file that contains a template.tmpl file.
