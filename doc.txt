@@ -5,6 +5,7 @@ Template language (given context ctx).
   - {{key [param1 param2 .. paramN]}}: if ctx["key"] is a function, then it will be called with parameters [ctx], [param1], .. [paramN]. Supported types: int, string, float, identifier. For identifiers, grab their corresponding object. Ex: {{macro foo}} will call [macro] with parameter ctx["foo"].
 - {{{key}}}: replaced with ctx["key"], no escape (i.e. for HTML insertion)
 - {{#for x in key}}: if ctx["key"] is a collection, loop through its items
+  - [key] can span spaces, allowing for macro calls: "newest 5 posts" calls macro [newest] with parameters 5, ctx["posts"]
 - {{#endfor}}: end of for loop
 - {{#if key}}: execute block if ctx["key"] evaluates to True
 - {{#elif key}}: execute block if ctx["key"] evaluates to True and previous if/elifs evaluated to false
@@ -14,8 +15,9 @@ Template language (given context ctx).
   - Macros cannot be nested inside of any other block
   - Within a file, macros must be declared before they are used
 - {{#endmacro}}: end of macro block
-- {{#define name value}}: sets ctx[name] to [value] where value is a literal (int, string, float, identifier). 
+- {{#define name value}}: sets ctx[name] to [value] where value is a literal (int, string, float) or identifier. 
   - Definitions cannot be inside of any block
+  - As with #for, [value] can span spaces, allowing for macro calls
 
 - Keys can be nested with dot notation, e.g. if ctx = {"key": {"a": 3}}, then "key.a" will fetch the value 3 (this works for dictionary entries as well as object attributes)
 - Delimiters can be escaped with a backlash: \{{ produces {{, and \}} produces }}

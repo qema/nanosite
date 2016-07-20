@@ -196,7 +196,7 @@ def fill_template(tmpl, ctx):
                 macro_name = cmd[1]
                 macro_param_names = cmd[2:]
             elif cmd[0] == "#define":
-                ctx[cmd[1]] = tokenize_params(ctx, " ".join(cmd[2:]))[0]
+                ctx[cmd[1]] = ctx_fetch(ctx, " ".join(cmd[2:]))[0]
             else:
                 if key[0] == "{":
                     val = str(ctx_fetch(ctx, key[1:]))
