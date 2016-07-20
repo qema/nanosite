@@ -67,7 +67,7 @@ def build_file(top, node, ctx):
                 # only copy file if it's new or newly modified 
                 if not os.path.lexists(out_path) or \
                    os.path.getmtime(path) > os.path.getmtime(out_path):
-                    print("copying", path, "->", out_path)
+                    #print("copying", path, "->", out_path)
                     shutil.copyfile(path, out_path)
             modified_files = [os.path.abspath(out_path)]
     return modified_files
