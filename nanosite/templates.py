@@ -128,6 +128,8 @@ def fill_template(tmpl, ctx):
             elif cmd[0] == "#endmacro":
                 seeking = None
                 create_macro = True
+            elif cmd[0] == "#define":
+                raise Exception("#define inside of a block")
                     
             if run_for_block:
                 orig = None  # save original context binding
@@ -184,6 +186,8 @@ def fill_template(tmpl, ctx):
                 seeking = {"#endmacro"}
                 macro_name = cmd[1]
                 macro_param_names = cmd[2:]
+            elif cmd[0] == "#define":
+                ctx[cmd[1]] = tokenize_params(ctx, " ".join(cmd[2:]))[0]
             else:
                 if key[0] == "{":
                     val = str(ctx_fetch(ctx, key[1:]))
