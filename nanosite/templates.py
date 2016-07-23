@@ -83,7 +83,7 @@ def fill_template(tmpl, ctx):
     # get part before delim and part after
     def get_chunk(s, delim):
         #a = s.split(delim, 1)
-        a = re.split("(?<!\\\\)" + delim, s, 1) # eg match {{ but not \{{
+        a = re.split(delim, s, 1)
         return (a[0], "") if len(a) <= 1 else a
     rest = tmpl
     out = ""
@@ -97,14 +97,15 @@ def fill_template(tmpl, ctx):
     macro_name = ""
     macro_param_names = []
     while len(rest) > 0:
-        cur, rest = get_chunk(rest, "{{")
+        # match {{, not \{{, \{{{
+        cur, rest = get_chunk(rest, "(?<!\\\\)(?<!{){{")
         #print("}}", cur, "{{", rest, seeking, seek_depth, depth_if)
         #print()
         if seeking is None:
             out += cur
         else:
             block_accum += cur
-        key, rest = get_chunk(rest, "}}")
+        key, rest = get_chunk(rest, "(?<!\\\\)(?<!})}}")
         key = key.strip()
         cmd = key.split()
         if cmd: cmd[0] = cmd[0].lower()
