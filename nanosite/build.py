@@ -163,7 +163,8 @@ def compile_dirtree(top, tree, ctx):
 def load_meta(top, ctx):
     meta_path = os.path.join(top, ctx["MetaDir"], "meta.json")
     if os.path.isfile(meta_path):
-        meta = json.loads(open(meta_path, "r").read())
+        with open(meta_path, "r") as f:
+            meta = json.loads(f.read())
         for key in meta:
             ctx[key] = meta[key]
     return ctx
@@ -176,7 +177,8 @@ def register_macros(top, ctx):
         return util.ctx_fetch(ctx, key)
     pgm_path = os.path.join(top, ctx["MetaDir"], "macros.py")
     if os.path.isfile(pgm_path):
-        pgm = open(pgm_path, "r").read()
+        with open(pgm_path, "r") as f:
+            pgm = f.read()
         exec(pgm, dict(list(globals().items()) + list(locals().items())))
     return ctx
 

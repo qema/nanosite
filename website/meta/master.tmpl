@@ -2,14 +2,30 @@
 <html>
   <head>
     <title>{{site.title}}</title>
+
+    <link rel="stylesheet" href="{{site.url}}/scripts/highlight/highlight.css">
+    <script src="{{site.url}}/scripts/highlight/highlight.js"></script>
+    <script src="{{site.url}}/scripts/highlight/tmpllang.js"></script>
+    <script>
+      hljs.initHighlightingOnLoad();
+      hljs.registerLanguage("tmpl", tmpllang);
+    </script>
+    
     <link rel="stylesheet" href="{{site.url}}/style.css">
   </head>
   <body>
     <header>
       <h1>nanosite</h1>
-      
+      <nav>
+	<ul>
+	</ul>
+      </nav>
     </header>
     {{{content}}}
+    <footer>
+      <div><small>Copyright {{site.author}}. Powered by <a href="https://github.com/qema/nanosite">nanosite</a>.</small></div>
+    </footer>
   </body>
+  
 </html>
 

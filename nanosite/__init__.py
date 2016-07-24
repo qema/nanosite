@@ -1,6 +1,7 @@
 import nanosite.util as util
 import nanosite.build as build
 import nanosite.server as server
+import nanosite.packages as packages
 
 import os
 import json
@@ -19,7 +20,9 @@ def is_in_nanosite_dir(path="."):
 def get_cmdline_args():
     parser = argparse.ArgumentParser(prog="nanosite")
     parser.add_argument("action", nargs="?", default="",
-                        help="options: build, serve, publish, clean, delete")
+                        help="options: build, serve, publish, " + \
+                             "import, clean, delete")
+    parser.add_argument("parameter", nargs="?", default="")
     parser.add_argument("--port", "-p", action="store", dest="port",
                         default="8000", type=int, help="set server port")
     parser.add_argument("-s", action="store", dest="site_dir",
@@ -28,10 +31,16 @@ def get_cmdline_args():
                         default="output/", help="set output directory")
     parser.add_argument("-m", action="store", dest="meta_dir",
                         default="meta/", help="set meta directory")
+    parser.add_argument("--set-package-url", action="store",
+                        dest="package_url",
+                        default=None, help="set package repository URL")
+    parser.add_argument("--force", "-f", action="store_true", dest="force",
+                        help="force actions")
     return parser.parse_args()
 
 def setup_blank_site(top, ctx, meta):
-    open(".nanosite", "w").close()
+    with open(".nanosite", "w") as f:
+        json.dump({}, f)
     open("index.html+", "w").close()
     meta_dir = os.path.join(top, ctx["MetaDir"])
     os.makedirs(meta_dir, exist_ok=True)
@@ -79,6 +88,7 @@ def setup_site_interactive(top, ctx):
 def main():
     args = get_cmdline_args()
     action = args.action.lower()
+    param = args.parameter
 
     site_exists = is_in_nanosite_dir(args.site_dir)
 
@@ -105,14 +115,27 @@ def main():
         util.publish_site(args.site_dir, args.meta_dir)
     elif action == "serve" or action == "s":
         server.run_server(args.port, args.site_dir, ctx)
-    elif action == "":
-        if site_exists:  # default action: run server
-            server.run_server(args.port, args.site_dir, ctx)
+    elif action == "import" or action == "i":
+        print("Installing package", param.lower())
+        success, msg = packages.import_package(param, args.site_dir, ctx,
+                                               force=args.force)
+        if success:
+            print("Successfully installed package.")
         else:
-            setup_site_interactive(args.site_dir, ctx)
+            print(msg)
+            print("Import failed.")
+    elif action == "":
+        if args.package_url:  # trying to set package url
+            packages.set_package_url(args.package_url, args.site_dir)
+            print("Updated package URL.")
+        else:
+            if site_exists:  # default action: run server
+                server.run_server(args.port, args.site_dir, ctx)
+            else:
+                setup_site_interactive(args.site_dir, ctx)
     else:
         print("Unrecognized action. " +
-              "Valid actions: build, serve, publish, clean, delete.")
+              "Valid actions: build, serve, publish, import, clean, delete.")
 
 if __name__ == "__main__":
     main()

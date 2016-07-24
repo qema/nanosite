@@ -18,7 +18,7 @@ def make_menu(ctx, start=True, site_url=None):
         site_url = ctx["site"]["url"]
         ctx = ctx["pages"]
         out += "<li><a href='" + site_url + "/'>Home</a></li>"
-    for item in sorted(ctx):
+    for item in ctx["navSections"]:
         if "is_file" in ctx[item]:
             if "title" in ctx[item]:
                 out += "<li><a href='" + site_url + "/" + \
