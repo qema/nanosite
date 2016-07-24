@@ -5,15 +5,20 @@
 	</article>
 	{{ #endfor }}
 
-nanosite is the tiny huge static site generator. 
+nanosite is the tiny huge static-site generator. 
 
 # tiny
-Minimalism is empowering. nanosite was created as a response to traditional site generators that force your content to conform to 
-nanosite imposes no restriction on the structure of your site. So you can finally control every detail of your site's design, whether you're making a blog, organization page or portfolio.
+Minimalism is empowering. nanosite was created as a response to traditional static-site generators that force your content to conform to a format.
+
+nanosite has a tiny footprint: it imposes no restriction on the structure of your site. So you can finally control every detail of your site's design, whether you're making a blog, organization page or portfolio.
 
 # huge
-nanosite is packed with useful features.
+All of the useful features are there when you need them.
 
+
+- Plugins and themes
 - Powerful templating language
-- Built-in server &mdash; develop your site live
-- Markdown, RSS
+- Built-in server with debugger
+- Extensible macros
+- Markdown
+- RSS

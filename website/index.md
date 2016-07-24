@@ -17,6 +17,7 @@ All of the useful features are there when you need them.
 
 - Powerful templating language
 - Built-in server with debugger
+- Plugins and themes
 - Extensible macros
 - Markdown
 - RSS
