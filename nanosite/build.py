@@ -2,8 +2,8 @@ import nanosite.templates as templates
 import nanosite.util as util
 
 import os
-import shutil
-import time
+from shutil import copyfile
+from time import localtime
 import json
 
 def build_file(top, node, ctx):
@@ -68,13 +68,13 @@ def build_file(top, node, ctx):
         # copy if src and dest are different (i.e. OutputDir != ".")
         if not util.same_path(path, out_path):
             if os.name == "nt":
-                shutil.copyfile(path, out_path)
+                copyfile(path, out_path)
             else:
                 # only copy file if it's new or newly modified 
                 if not os.path.lexists(out_path) or \
                    os.path.getmtime(path) > os.path.getmtime(out_path):
                     #print("copying", path, "->", out_path)
-                    shutil.copyfile(path, out_path)
+                    copyfile(path, out_path)
             modified_files = [os.path.abspath(out_path)]
     return modified_files
     
@@ -114,7 +114,7 @@ def add_dirtree_file(top, path, ctx, template_path):
     out_dict["input_path"] = os.path.relpath(path, top)
     out_dict["path"] = os.path.splitext(os.path.relpath(path, top))[0] + new_ext
     out_dict["template_path"] = template_path
-    out_dict["date"] = time.localtime(os.path.getmtime(path))
+    out_dict["date"] = localtime(os.path.getmtime(path))
     return out_dict
 
 def make_dirtree(top, path, ctx, template_path=None):

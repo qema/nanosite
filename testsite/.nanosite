@@ -1,9 +1,6 @@
 {
-  "package-url": "http://wanganzhou.com/nanosite/packages",
   "installed-packages": [
-    "testpkg",
-    "testpkg",
-    "testpkg",
     "testpkg"
-  ]
+  ],
+  "package-url": "http://wanganzhou.com/nanosite/packages/"
 }

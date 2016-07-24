@@ -3,19 +3,35 @@ import nanosite.templates as templates
 import os
 from zipfile import ZipFile
 import json
+from urllib.request import urlopen
+from urllib.parse import urljoin
 
-DefaultPackageURL = "http://wanganzhou.com/nanosite/packages"
+DefaultPackageURL = "http://wanganzhou.com/nanosite/packages/"
 
 def set_package_url(url, top):
+    if url and url[-1] != "/": url += "/"  # add trailing slash if necessary
+    dot_nanosite = None
     with open(os.path.join(top, ".nanosite"), "r") as f:
         dot_nanosite = json.loads(f.read())
         dot_nanosite["package-url"] = url
+    if dot_nanosite:
+        with open(os.path.join(top, ".nanosite"), "w") as dnf:
+            json.dump(dot_nanosite, dnf, indent=2)
 
+# name: package name
 # package_url: package repo URL
 # returns whether download succeeded
 def download_package(name, package_url, dest):
-    print("download_package: TODO")
-    return False
+    filename = name + ".zip"
+    url = urljoin(package_url, filename)
+    print("Downloading package", name, "from", url)
+    try:
+        with urlopen(url) as response, \
+         open(filename, "wb") as out_file:
+            out_file.write(response.read())
+        return True
+    except:
+        return False
 
 # f: ZipFile object of package file
 # dot_nanosite: contents of .nanosite file (loaded from JSON)
@@ -42,7 +58,8 @@ def install_package(name, f, dot_nanosite, top, ctx, force=False):
                     dest_file.write(src_file.read().decode("utf-8"))
 
         # add to list of installed packages
-        installed_packages.append(name)
+        if name not in installed_packages:
+            installed_packages.append(name)
         dot_nanosite["installed-packages"] = installed_packages
         with open(os.path.join(top, ".nanosite"), "w") as dnf:
             json.dump(dot_nanosite, dnf, indent=2)

@@ -3,12 +3,13 @@ import nanosite.build as build
 
 import os
 from datetime import datetime
-import traceback
-import time
-import http.server
-import socketserver
-import threading
-import atexit
+from traceback import print_exc as trace_print_exc
+from traceback import format_exc as trace_format_exc
+from time import sleep
+from http.server import SimpleHTTPRequestHandler
+from socketserver import TCPServer
+from threading import Thread
+from atexit import register as atexit_register
 
 def update(top, ctx, handler):
     def last_update_time(walk, ignore=[], last_t=None):
@@ -47,11 +48,11 @@ def update(top, ctx, handler):
             except:
                 last_t = None
                 mf = []
-                traceback.print_exc()
-                handler.error = traceback.format_exc()
+                trace_print_exc()
+                handler.error = trace_format_exc()
         walk = sorted(list(os.walk(top)))
         t = last_update_time(walk, mf, last_t)
-        time.sleep(0.5)
+        sleep(0.5)
         # file updated or dirtree changed
         if last_t is not None and (t != last_t or walk != last_walk):
             needs_update = True
@@ -62,7 +63,7 @@ def run_server(port, site_dir, ctx):
     output_dir = ctx["OutputDir"]
 
     # start server
-    class RequestHandler(http.server.SimpleHTTPRequestHandler):
+    class RequestHandler(SimpleHTTPRequestHandler):
         def do_GET(self):
             if hasattr(self, "error") and self.error is not None:
                 self.send_response(200, 'OK')
@@ -74,11 +75,11 @@ def run_server(port, site_dir, ctx):
         def translate_path(self, path):
             return os.path.join(site_dir, output_dir, path[1:])
     handler = RequestHandler
-    httpd = socketserver.TCPServer(("", port), handler)
-    atexit.register(lambda: httpd.shutdown())
+    httpd = TCPServer(("", port), handler)
+    atexit_register(lambda: httpd.shutdown())
     
     # start update thread
-    thread = threading.Thread(target=update, args=(site_dir, ctx, handler))
+    thread = Thread(target=update, args=(site_dir, ctx, handler))
     thread.daemon = True
     thread.start()
     
