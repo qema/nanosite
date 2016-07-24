@@ -21,3 +21,5 @@ All of the useful features are there when you need them.
 - Extensible macros
 - Markdown
 - RSS
+
+# get started

@@ -5,8 +5,9 @@ setup(
     author = "Andrew Wang",
     author_email = "azw7@cornell.edu",
     url = "https://github.com/qema/nanosite",
-    version = "0.1.0",
+    version = "0.1.1",
     packages = ["nanosite"],
+    install_requires = ["markdown"],
     entry_points = {
         "console_scripts": [
             "nanosite = nanosite:main"
