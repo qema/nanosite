@@ -1,0 +1,21 @@
+body {
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-weight: 300;
+    width: 80%;
+    margin: auto;
+    margin-top: 1em;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    margin: 0;
+    font-weight: 300;
+}
+
+header {
+    
+}
+
+header h1 {
+    font-size: 4em;
+    font-weight: 200;
+}

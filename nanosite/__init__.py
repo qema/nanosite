@@ -38,7 +38,7 @@ def setup_blank_site(top, ctx, meta):
     with open(os.path.join(meta_dir, "master.tmpl"), "w") as f:
         f.write("{{{content}}}")
     with open(os.path.join(meta_dir, "macros.py"), "w") as f:
-        f.write('# macro("example", lambda ctx: ctx_fetch(ctx, "site.title"))\n')
+        f.write('# macro("example", lambda ctx: fetch(ctx, "site.title"))\n')
     with open(os.path.join(meta_dir, "meta.json"), "w") as f:
         json.dump(meta, f, sort_keys=True, indent=2)
     if os.name == "nt":
