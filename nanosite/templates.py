@@ -125,7 +125,7 @@ def fill_template(tmpl, ctx):
                     seeking = None
             elif cmd[0] == "#elif":
                 if "#elif" in seeking and seek_depth == depth_if:
-                    if ctx_fetch(ctx, cmd[1]):
+                    if ctx_fetch(ctx, " ".join(cmd[1:])):
                         #print("FOUND MATCHING ELIF", seek_depth, depth_if)
                         seeking = None
             elif cmd[0] == "#endif":
@@ -178,7 +178,7 @@ def fill_template(tmpl, ctx):
                 pass
             elif cmd[0] == "#if":
                 depth_if += 1
-                if not ctx_fetch(ctx, cmd[1]):  # if ctx[key] evaluates to True
+                if not ctx_fetch(ctx, " ".join(cmd[1:])):  # if ctx[key] evaluates to True
                     seeking = {"#elif", "#else", "#endif"}
                     seek_depth = depth_if
             elif cmd[0] == "#else" or cmd[0] == "#elif":

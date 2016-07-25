@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>nanosite</title>
+    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link rel="stylesheet" href="/scripts/highlight/highlight.css">
+    <script src="/scripts/highlight/highlight.js"></script>
+    <script>
+      hljs.initHighlightingOnLoad();
+    </script>
+    
+    <link rel="stylesheet" href="/style.css">
+  </head>
+  <body>
+    <header>
+      <h1><a href="/index.html">nanosite</a></h1>
+      <nav>
+	<ul>
+	  <li><a href="/tutorial.html">Tutorial</a></li><li><a href="/doc/index.html">Documentation</a></li><li><a href="/packages.html">Packages</a></li><li><a href="/download.html">Download</a></li>
+	</ul>
+      </nav>
+    </header>
+    
+<h2>template language</h2>
+
+
+<article>
+  <p>In site generation, <code>.md+</code>, <code>.html+</code>, <code>.xml+</code> and <code>.tmpl</code> files are run through the template engine. The template engine operates on template expressions, which are surrounded by double curly braces <code>{{</code> <code>}}</code>. Each template is compiled against a <em>context</em>, which is a set of variables available to the template.</p>
+<p>Call the current context <code>context</code>. <code>context["key"]</code> denotes fetching the value of variable <code>key</code> from context <code>context</code>.</p>
+<ul>
+<li><a href="#fetch">fetch</a><ul>
+<li><a href="#basic-fetch">basic fetch</a></li>
+<li><a href="#macro-call">macro call</a></li>
+</ul>
+</li>
+<li><a href="#control-blocks">control blocks</a><ul>
+<li><a href="#if">#if</a></li>
+</ul>
+</li>
+</ul>
+<h1><a name="fetch"></a> fetch</h1>
+<h2><a name="basic-fetch"></a> basic fetch</h2>
+<p><strong>Syntax:</strong></p>
+<pre><code>{{ key }}
+</code></pre>
+<p><strong>Semantics:</strong> Evaluates to <code>context["key"]</code>. Can also grab nested entries with dot syntax: <code>{{ site.url }}</code> evaluates to <code>context["site"]["url"]</code>. By default, HTML is escaped. Use triple braces to grab variables containing HTML: <code>{{{ linkToMyInstagram }}}</code></p>
+<p><strong>Examples:</strong></p>
+<ul>
+<li><code>{{ title }}</code> &rarr; <code>template language</code></li>
+<li><code>{{ site.url }}</code> &rarr; <code></code></li>
+</ul>
+<h2><a name="macro-call"></a> macro call</h2>
+<p><strong>Syntax:</strong></p>
+<pre><code>{{ key [parameter1 ... parameterN] }}
+</code></pre>
+<p><strong>Semantics:</strong> If <code>context["key"]</code> is a macro, then call it with parameters <code>context</code>, <code>parameter1</code>, ... <code>parameterN</code>.</p>
+<p><strong>Examples:</strong></p>
+<ul>
+<li><code>{{ formatDate date }}</code> &rarr; <code>25 Jul 2016</code></li>
+</ul>
+<h1><a name="control-blocks"></a> control blocks</h1>
+<h2><a name="if"></a> #if</h2>
+<p><strong>Syntax:</strong></p>
+<pre><code>{{ #if key }}
+  [A]
+[{{ #elif key2 }}]
+  [B]
+  ...
+[{{ #else }}]
+  [C]
+{{ #endif }}
+</code></pre>
+<p><strong>Semantics:</strong> If <code>context["key"]</code> evaluates to <code>True</code>, then evaluate code block <code>[A]</code>. Otherwise, if <code>context["key2"]</code> evaluates to <code>True</code>, then evaluate block <code>[B]</code>. ... If none of the conditions are met, evaluate block <code>[C]</code>. <code>#elif</code> and <code>#else</code> clauses are optional.</p>
+<p><strong>Examples:</strong></p>
+<ul>
+<li>
+<p><code>{{ #if title }}{{ title }}{{ #endif }}</code> &rarr; <code>template language</code></p>
+</li>
+<li>
+<p>{{key [param1 param2 .. paramN]}}: if ctx["key"] is a function, then it will be called with parameters [ctx], [param1], .. [paramN].</p>
+<ul>
+<li>Supported types: int, string, float, identifier. For identifiers, grab their corresponding object. Ex: {{macro foo}} will call [macro] with parameter ctx["foo"].</li>
+</ul>
+</li>
+<li>{{ #for x in key }}: if ctx["key"] is a collection, loop through its items</li>
+<li>[key] can span spaces, allowing for macro calls: "newest 5 posts" calls macro [newest] with parameters 5, ctx["posts"]</li>
+<li>{{#endfor}}: end of for loop</li>
+<li>{{#if key}}: execute block if ctx["key"] evaluates to True</li>
+<li>{{#elif key}}: execute block if ctx["key"] evaluates to True and previous if/elifs evaluated to false</li>
+<li>{{#else}}: execute block if all previous if/elifs evaluated to false</li>
+<li>{{#endif}}: end of if block</li>
+<li>{{#macro name [param1 param2 .. paramN]}}: begins a macro block. ctx[name] becomes a function that fills in the contents of the macro block using the given parameters as additional context variables, and returns the result (like a template)</li>
+<li>Macros cannot be nested inside of any other block</li>
+<li>Within a file, macros must be declared before they are used</li>
+<li>{{#endmacro}}: end of macro block</li>
+<li>{{#define name value}}: sets ctx[name] to [value] where value is a literal (int, string, float) or identifier.</li>
+<li>
+<p>As with #for, [value] can span spaces, allowing for macro calls</p>
+</li>
+<li>
+<p>Keys can be nested with dot notation, e.g. if ctx = {"key": {"a": 3}}, then "key.a" will fetch the value 3 (this works for dictionary entries as well as object attributes)</p>
+</li>
+<li>Delimiters can be escaped with a backlash, and the template compiler will ignore them. In the site generator, \{{ will output {{, and \}} will output }}</li>
+</ul>
+</article>
+
+    <footer>
+      <div><small>Copyright Andrew Wang. Powered by <a href="/index.html">nanosite</a>.</small></div>
+    </footer>
+  </body>
+  
+</html>
+

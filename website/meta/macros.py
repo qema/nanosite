@@ -2,7 +2,7 @@ def format_date(ctx, date):
     mo = ["Jan", "Feb", "Mar", "Apr", "May", "Jun",
           "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"][date.tm_mon - 1]
     return str(date.tm_mday) + " " + mo + " " + str(date.tm_year)
-macro("format_date", format_date)
+macro("formatDate", format_date)
 
 def newest(ctx, count, folder):
     unlimited = type(count) == str and count.lower() == "unlimited"

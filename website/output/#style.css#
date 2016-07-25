@@ -87,17 +87,10 @@ p {
     margin-bottom: 1em;
 }
 
-code {
+p code {
     background: #f8f8f8;
+    border-radius: 2px;
     padding: 0.25em;
-    font-family: Menlo, Monaco, monospace;
-    font-size: 0.8em;
-    line-height: 1.5em;
-    margin: 0;
-}
-
-strong {
-    font-weight: 400;
 }
 
 a, a:visited {

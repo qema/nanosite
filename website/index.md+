@@ -7,12 +7,12 @@
 
 nanosite is the tiny huge static-site generator. 
 
-## tiny
+# tiny
 Minimalism is empowering. nanosite was created as a response to traditional static-site generators that force your content to conform to a rigid format.
 
 nanosite has a tiny footprint. No predefined structure. No obtrusive features. So you can finally control every detail of your site's design, whether you're making a blog, organization page or portfolio.
 
-## huge
+# huge
 All of the useful features are there when you need them.
 
 - Built-in server &mdash; develop your site live
@@ -22,7 +22,7 @@ All of the useful features are there when you need them.
 - Markdown
 - RSS
 
-## get started
+# get started
 nanosite uses [Python 3](https://www.python.org/downloads/):
 
     $ pip install nanosite

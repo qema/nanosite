@@ -24,13 +24,12 @@ h1, h2, h3, h4, h5, h6 {
     font-weight: 200;
 }
 
-h1 {
-    font-size: 2.5em;
-}
-
-h2 {
-    font-size: 2.25em;
-}
+h1 { font-size: 52.8px; }
+h2 { font-size: 43.2px; }
+h3, article h1 { font-size: 36px; }
+h4, article h2 { font-size: 28.8px; }
+h5, article h3 { font-size: 21.6px; }
+h6 { font-size: 16.8px; }
 
 header {
     margin-top: 3em;
@@ -86,6 +85,19 @@ nav li a:hover {
 p {
     margin-top: 0;
     margin-bottom: 1em;
+}
+
+code {
+    background: #f8f8f8;
+    padding: 0.25em;
+    font-family: Menlo, Monaco, monospace;
+    font-size: 0.8em;
+    line-height: 1.5em;
+    margin: 0;
+}
+
+strong {
+    font-weight: 400;
 }
 
 a, a:visited {
