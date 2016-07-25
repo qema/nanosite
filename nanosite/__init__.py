@@ -83,38 +83,7 @@ def main():
     site_exists = is_in_nanosite_dir(args.site_dir)
 
     ctx = {"OutputDir": args.output_dir, "MetaDir": args.meta_dir}
-    if action == "build" or action == "b":
-        if site_exists:
-            build.make_site(args.site_dir, ctx)
-            print("Built site.")
-        else:
-            print("No site in this directory.")
-    elif action == "clean" or action == "c":
-        util.clean_output_dir(args.site_dir, args.output_dir)
-    elif action == "delete" or action == "d":
-        if site_exists:
-            if util.prompt_YN("Are you sure you want to delete the site " +
-                              "in this directory?"):
-                util.delete_site_dir(args.site_dir)
-                print("Deleted site.")
-            else:
-                print("Canceled.")
-        else:
-            print("No site in this directory.")
-    elif action == "publish" or action == "p":
-        util.publish_site(args.site_dir, args.meta_dir)
-    elif action == "serve" or action == "s":
-        server.run_server(args.port, args.site_dir, ctx)
-    elif action == "import" or action == "i":
-        print("Installing package", param.lower())
-        success, msg = packages.import_package(param, args.site_dir, ctx,
-                                               force=args.force)
-        if success:
-            print("Successfully installed package.")
-        else:
-            print(msg)
-            print("Import failed.")
-    elif action == "":
+    if action == "":
         if args.package_url:  # trying to set package url
             packages.set_package_url(args.package_url, args.site_dir)
             print("Updated package URL.")
@@ -123,6 +92,36 @@ def main():
                 server.run_server(args.port, args.site_dir, ctx)
             else:
                 setup_site_interactive(args.site_dir, ctx)
+    elif not site_exists:
+        print("No site in this directory.")
+    elif action == "build" or action == "b":
+        build.make_site(args.site_dir, ctx)
+        print("Built site.")
+    elif action == "clean" or action == "c":
+        util.clean_output_dir(args.site_dir, args.output_dir)
+    elif action == "delete" or action == "d":
+        if util.prompt_YN("Are you sure you want to delete the site " +
+                          "in this directory?"):
+            util.delete_site_dir(args.site_dir)
+            print("Deleted site.")
+        else:
+            print("Canceled.")
+    elif action == "publish" or action == "p":
+        util.publish_site(args.site_dir, args.meta_dir)
+    elif action == "serve" or action == "s":
+        server.run_server(args.port, args.site_dir, ctx)
+    elif action == "import" or action == "i":
+        if param:
+            print("Installing package", param.lower())
+            success, msg = packages.import_package(param, args.site_dir, ctx,
+                                                   force=args.force)
+            if success:
+                print("Successfully installed package.")
+            else:
+                print(msg)
+                print("Import failed.")
+        else:
+            print("Usage: nanosite import [package-name]")
     else:
         print("Unrecognized action. " +
               "Valid actions: build, serve, publish, import, clean, delete.")
