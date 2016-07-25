@@ -40,3 +40,13 @@ def publish_site(top, meta_dir):
     subprocess.call(os.path.join(top, meta_dir, "publish"))
     os.chdir(cur_dir)
     print("Finished running publish script.")
+
+def prompt_YN(prompt):
+    full_prompt = prompt + " [y/n] "
+    print(full_prompt, end="")
+    x = input()
+    while x[0].lower() != "y" and x[0].lower() != "n":
+        print("Invalid option. Type 'y' for yes and 'n' for no.")
+        print(full_prompt, end="")
+        x = input()
+    return x[0].lower() == "y"

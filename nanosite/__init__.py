@@ -60,18 +60,8 @@ def setup_blank_site(top, ctx, meta):
             f.write("# This script is run during `nanosite publish`\n")
         os.chmod(publish_script_path, 0o744)  # make executable
 
-def prompt_YN(prompt):
-    full_prompt = prompt + " [y/n] "
-    print(full_prompt, end="")
-    x = input()
-    while x[0].lower() != "y" and x[0].lower() != "n":
-        print("Invalid option. Type 'y' for yes and 'n' for no.")
-        print(full_prompt, end="")
-        x = input()
-    return x[0].lower() == "y"
-
 def setup_site_interactive(top, ctx):
-    if prompt_YN("Would you like to set up a site in this directory?"):
+    if util.prompt_YN("Would you like to set up a site in this directory?"):
         print("Enter a title for your site: ", end="")
         title = input()
         print("Enter a tagline for your site: ", end="")
@@ -103,8 +93,8 @@ def main():
         util.clean_output_dir(args.site_dir, args.output_dir)
     elif action == "delete" or action == "d":
         if site_exists:
-            if prompt_YN("Are you sure you want to delete the site " +
-                         "in this directory?"):
+            if util.prompt_YN("Are you sure you want to delete the site " +
+                              "in this directory?"):
                 util.delete_site_dir(args.site_dir)
                 print("Deleted site.")
             else:

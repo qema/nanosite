@@ -1,0 +1,5 @@
+{
+  "files": {
+    "macros.py": {"dest": "{{MetaDir}}/macros.py", "action": "a"}
+  }
+}

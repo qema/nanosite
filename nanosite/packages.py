@@ -1,4 +1,5 @@
 import nanosite.templates as templates
+import nanosite.util as util
 
 import os
 from zipfile import ZipFile
@@ -47,12 +48,33 @@ def install_package(name, f, dot_nanosite, top, ctx, force=False):
         for dependency in dependencies:
             if dependency not in installed_packages:
                 print("Installing dependency", dependency)
-                import_package(dependency, top, ctx)
+                success, msg = import_package(dependency, top, ctx)
+                if not success:
+                    return False, "Unable to install dependency " + dependency
 
+        # preliminarily go through files, prompt user to overwrite if needed
+        overwritten_files = []
+        for filename in files:
+            rule = files[filename]
+            dest = os.path.join(top, templates.fill_template(rule["dest"],
+                                                             ctx))
+            # an overwrite will occur
+            if os.path.isfile(dest) and "w" in rule["action"].lower():
+                overwritten_files.append(dest)
+        if overwritten_files:
+            print("The following files will be overwritten:")
+            for fn in overwritten_files:
+                print(" -", fn)
+            if not util.prompt_YN("Are you sure you want to continue?"):
+                return False, "Canceled."
+            
         # go through files
         for filename in files:
             rule = files[filename]
-            dest = os.path.join(top, templates.fill_template(rule["dest"], ctx))
+            dest = os.path.join(top, templates.fill_template(rule["dest"],
+                                                             ctx))
+            
+            os.makedirs(os.path.dirname(dest), exist_ok=True)
             with f.open(filename, "r") as src_file:
                 with open(dest, rule["action"]) as dest_file:
                     dest_file.write(src_file.read().decode("utf-8"))
@@ -79,6 +101,12 @@ def import_package(name, top, ctx, force=False):
             dot_nanosite["package-url"] = DefaultPackageURL
         installed_packages = dot_nanosite["installed-packages"]
         package_url = dot_nanosite["package-url"]
+
+        # remove trailing slashes in MetaDir and OutputDir if needed
+        if "MetaDir" in ctx and ctx["MetaDir"][-1] == "/":
+            ctx["MetaDir"] = ctx["MetaDir"][:-1]
+        if "OutputDir" in ctx and ctx["OutputDir"][-1] == "/":
+            ctx["OutputDir"] = ctx["OutputDir"][:-1]
 
         # check if package already installed
         if name in installed_packages and not force:

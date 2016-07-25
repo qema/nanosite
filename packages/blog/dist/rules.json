@@ -1,0 +1,13 @@
+{
+  "files": {
+    "archive.html+": {"dest": "archive.html+", "action": "w"},
+    "index.html+": {"dest": "index.html+", "action": "w"},
+    "style.css": {"dest": "style.css", "action": "w"},
+    "meta/master.tmpl": {"dest": "{{MetaDir}}/master.tmpl", "action": "w"},
+    "pages/template.tmpl": {"dest": "pages/template.tmpl", "action": "w"},
+    "pages/your-pages-here.md": {"dest": "pages/your-pages-here.md", "action": "w"},
+    "posts/template.tmpl": {"dest": "posts/template.tmpl", "action": "w"},
+    "posts/your-blog-posts-here.md": {"dest": "posts/your-blog-posts-here.md", "action": "w"}
+  },
+  "dependencies": ["date", "menu"]
+}

@@ -1,0 +1,131 @@
+@import url(https://fonts.googleapis.com/css?family=Merriweather:400,400italic,700);
+
+h1, h2, h3, h4, h5, h6 {
+    font-weight: 400;
+    margin: 0;
+}
+
+h1 { font-size: 36px; }
+h2 { font-size: 30px; }
+h3 { font-size: 24px; }
+h4 { font-size: 18px; }
+h5 { font-size: 14px; }
+h6 { font-size: 12px; }
+
+@media (min-width: 768px) {
+    body {
+	margin: 0 16.667%;
+    }
+}
+
+body {
+    padding: 0;
+    font-family: Merriweather, serif;
+    font-size: 14px;
+}
+
+h1 a, h2 a, h3 a {
+    text-decoration: none;
+}
+h1 a:hover, h2 a:hover, h3 a:hover {
+    color: black;
+}
+
+header {
+    margin-top: 1em;
+    text-align: center;
+}
+
+nav {
+    display: block;
+    margin: 1em;
+}
+
+nav ul {
+    list-style: none;
+    margin: 0;
+    padding-left: 0;
+}
+
+nav li {
+    display: inline;
+    float: center;
+    padding: 1em;
+    position: relative;
+}
+  
+nav li a {
+    text-decoration: none;
+    display: inline-block;
+    color: black;
+}
+
+nav ul li:hover {
+    cursor: default;
+    text-decoration: underline;
+    color: darkred;
+}
+
+nav ul li ul {
+    visibility: hidden;
+    min-width: 160px;
+    position: absolute;
+    text-align: left;
+    left: 0;
+    z-index: 999;
+    background: white;
+    padding: 0.125em 0.5em 0.5em 0;
+    border-radius: 8px;
+}
+
+nav ul li:hover > ul,
+nav ul li ul:hover {
+    visibility: visible;
+}
+
+nav ul li ul li {
+    clear: both;
+    padding: 0 0 0 1em;
+    width: 100%;
+    display: block;
+}
+
+nav ul li ul li a:hover {
+    text-decoration: none;
+    color: red;
+}
+
+p {
+    margin-top: 0;
+    margin-bottom: 10px;
+    line-height: 1.4;
+}
+
+pre, code {
+    display: block;
+    word-wrap: break-word;
+}
+
+img {
+    max-width: 100%;
+}
+
+article {
+    margin-top: 2em;
+    margin-bottom: 3em;
+}
+
+a {
+    text-decoration: underline;
+    color: black;
+}
+a:hover {
+    text-decoration: underline;
+    color: red;
+}
+
+footer {
+    text-align: center;
+    margin-top: 1em;
+    margin-bottom: 2em;
+}

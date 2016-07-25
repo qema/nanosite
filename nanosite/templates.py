@@ -206,10 +206,10 @@ def fill_template(tmpl, ctx):
                 make_define(ctx, cmd)
             else:
                 if key[0] == "{":
-                    val = str(ctx_fetch(ctx, key[1:]))
+                    val = str(ctx_fetch(ctx, key[1:].strip()))
                     _, rest = get_chunk(rest, "}") # get matching close brace
                 else:
-                   val = escape_HTML(str(ctx_fetch(ctx, key)))
+                   val = escape_HTML(str(ctx_fetch(ctx, key.strip())))
                 out += fill_template(val, ctx)
                 
     if depth_if > 0:

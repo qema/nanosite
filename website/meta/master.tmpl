@@ -2,28 +2,29 @@
 <html>
   <head>
     <title>{{site.title}}</title>
+    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <link rel="stylesheet" href="{{site.url}}/scripts/highlight/highlight.css">
     <script src="{{site.url}}/scripts/highlight/highlight.js"></script>
-    <script src="{{site.url}}/scripts/highlight/tmpllang.js"></script>
     <script>
       hljs.initHighlightingOnLoad();
-      hljs.registerLanguage("tmpl", tmpllang);
     </script>
     
     <link rel="stylesheet" href="{{site.url}}/style.css">
   </head>
   <body>
     <header>
-      <h1>nanosite</h1>
+      <h1><a href="{{site.url}}/index.html">nanosite</a></h1>
       <nav>
 	<ul>
+	  <li><a href="{{site.url}}/tutorial.html">Tutorial</a></li><li><a href="{{site.url}}/doc/index.html">Documentation</a></li><li><a href="{{site.url}}/packages.html">Packages</a></li><li><a href="{{site.url}}/download.html">Download</a></li>
 	</ul>
       </nav>
     </header>
     {{{content}}}
     <footer>
-      <div><small>Copyright {{site.author}}. Powered by <a href="https://github.com/qema/nanosite">nanosite</a>.</small></div>
+      <div><small>Copyright {{site.author}}. Powered by <a href="{{site.url}}/index.html">nanosite</a>.</small></div>
     </footer>
   </body>
   
