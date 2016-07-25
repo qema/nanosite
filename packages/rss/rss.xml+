@@ -1,0 +1,19 @@
+<!-- Link to rss.xml to allow users to add this site to their RSS feed. -->
+
+<?xml version="1.0" encoding="UTF-8" ?>
+<rss version="2.0">
+
+<channel>
+  <title>{{ site.title }}</title>
+  <link>{{ site.url }}</link>
+  <description>{{ site.tagline }}</description>
+
+  {{ #for post in newest 5 posts }}
+    <item>
+      <title>{{ post.title }}</title>
+      <link>{{site.url}}/{{post.path}}</link>
+    </item>
+  {{ #endfor }}
+</channel>
+
+</rss>

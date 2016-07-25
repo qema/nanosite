@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>nanosite</title>
+    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link rel="stylesheet" href="/scripts/highlight/highlight.css">
+    <script src="/scripts/highlight/highlight.js"></script>
+    <script>
+      hljs.initHighlightingOnLoad();
+    </script>
+    
+    <link rel="stylesheet" href="/style.css">
+  </head>
+  <body>
+    <header>
+      <h1><a href="/index.html">nanosite</a></h1>
+      <nav>
+	<ul>
+	  <li><a href="/tutorial.html">Tutorial</a></li><li><a href="/doc/index.html">Documentation</a></li><li><a href="/packages.html">Packages</a></li><li><a href="/download.html">Download</a></li>
+	</ul>
+      </nav>
+    </header>
+    
+
+<article>
+  <pre><code>{{ #for post in newest 5 posts }}
+  &lt;article&gt;
+    &lt;div&gt;{{ post.title }}&lt;/div&gt;
+    &lt;div&gt;{{{ post.content }}}&lt;/div&gt;
+  &lt;/article&gt;
+{{ #endfor }}
+</code></pre>
+<p>nanosite is the tiny huge static-site generator. </p>
+<h2>tiny</h2>
+<p>Minimalism is empowering. nanosite was created as a response to traditional static-site generators that force your content to conform to a rigid format.</p>
+<p>nanosite has a tiny footprint. No predefined structure. No obtrusive features. So you can finally control every detail of your site's design, whether you're making a blog, organization page or portfolio.</p>
+<h2>huge</h2>
+<p>All of the useful features are there when you need them.</p>
+<ul>
+<li>Built-in server &mdash; develop your site live</li>
+<li>Powerful templating language</li>
+<li>Plugins and themes</li>
+<li>Extensible macros</li>
+<li>Markdown</li>
+<li>RSS</li>
+</ul>
+<h2>get started</h2>
+<p>nanosite uses <a href="https://www.python.org/downloads/">Python 3</a>:</p>
+<pre><code>$ pip install nanosite
+$ nanosite
+</code></pre>
+<p>Check out the <a href="/tutorial.html">tutorial</a>.</p>
+</article>
+
+    <footer>
+      <div><small>Copyright Andrew Wang. Powered by <a href="/index.html">nanosite</a>.</small></div>
+    </footer>
+  </body>
+  
+</html>
+
