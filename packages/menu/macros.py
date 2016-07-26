@@ -15,7 +15,7 @@ def make_menu(ctx, folder, start=True, site_url=None):
         ctx = folder
         out += "<li><a href='" + site_url + "/'>Home</a></li>"
     for item in sorted(ctx):
-        if "is_file" in ctx[item]:
+        if "isFile" in ctx[item]:
             if "title" in ctx[item]:
                 out += "<li><a href='" + site_url + "/" + \
                        ctx[item]["path"] + "'>"

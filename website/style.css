@@ -2,7 +2,7 @@ body {
     font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
     font-weight: 300;
     margin: auto;
-    font-size: 1.2em;
+    font-size: 1.15em;
     line-height: 1.5em;
     padding: 1em;
 }
@@ -38,9 +38,14 @@ h5, article h3 { font-size: 21.6px; }
 h6 { font-size: 16.8px; }
 
 header {
-    margin-top: 3em;
+    margin-top: 1em;
     margin-bottom: 1em;
     position: relative;
+}
+@media (min-width: 1024px) {
+    header {
+	margin-top: 3em;
+    }
 }
 
 header h1 {
@@ -89,8 +94,11 @@ nav li a:hover {
 }
 
 p {
+    margin-top: 1em;
+    margin-bottom: 0;
+}
+h1+p, h2+p, h3+p, h4+p, h5+p, h6+p {
     margin-top: 0;
-    margin-bottom: 1em;
 }
 
 code {

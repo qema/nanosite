@@ -98,6 +98,8 @@ Triple braces work the same way as in [basic fetch](#basic-fetch), for macros th
 	
 **Semantics:** Declares a macro named `name` that takes parameters `context`, `parameter1`, ..., `parameterN`, and returns the contents of the code block. In the inner code block, the parameters are bound to the values they were called with.
 
+Typically, macros are declared in [macros.py]({{site.url}}/doc/site-generation.html#macros-py) and [master.tmpl]({{site.url}}/doc/site-generation.html#master-tmpl).
+
 **Examples:**
 
 - Macro to create HTML links:

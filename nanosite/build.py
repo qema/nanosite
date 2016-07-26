@@ -7,9 +7,9 @@ from time import localtime
 import json
 
 def build_file(top, node, ctx):
-    assert(node["is_file"])
+    assert(node["isFile"])
     
-    path = os.path.join(top, node["input_path"])
+    path = os.path.join(top, node["inputPath"])
     root, ext = os.path.splitext(path)
 
     modified_files = []
@@ -19,7 +19,7 @@ def build_file(top, node, ctx):
             ctx[k] = node[k]
 
         # fill local template
-        template_path = node["template_path"]
+        template_path = node["templatePath"]
         if template_path is not None:
             local_tmpl = templates.get_template(template_path)
             local_out_html = templates.fill_template(local_tmpl, ctx)
@@ -110,10 +110,10 @@ def add_dirtree_file(top, path, ctx, template_path):
         #shutil.copyfile(path, out_path)
         out_dict = {}
 
-    out_dict["is_file"] = True
-    out_dict["input_path"] = os.path.relpath(path, top)
+    out_dict["isFile"] = True
+    out_dict["inputPath"] = os.path.relpath(path, top)
     out_dict["path"] = os.path.splitext(os.path.relpath(path, top))[0] + new_ext
-    out_dict["template_path"] = template_path
+    out_dict["templatePath"] = template_path
     out_dict["date"] = localtime(os.path.getmtime(path))
     return out_dict
 
@@ -153,7 +153,7 @@ def make_dirtree(top, path, ctx, template_path=None):
 def compile_dirtree(top, tree, ctx):
     modified_files = []
     for k, node in tree.items():
-        if "is_file" in node and node["is_file"]:
+        if "isFile" in node and node["isFile"]:
             mf = build_file(top, node, dict(ctx))
         else:
             mf = compile_dirtree(top, node, ctx)

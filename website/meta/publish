@@ -4,3 +4,6 @@
 nanosite clean
 nanosite build -o ~/dev/qema.github.io/nanosite
 
+pushd ~/dev/qema.github.io/
+nanosite publish
+popd

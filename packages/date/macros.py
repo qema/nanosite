@@ -17,7 +17,7 @@ macro("formatDate", format_date)
 #   the result, as in: {{ #for post in newest 5 posts }} ... {{ #endfor }}
 def newest(ctx, count, folder):
     unlimited = type(count) == str and count.lower() == "unlimited"
-    s = sorted([x for x in folder.values() if "is_file" in x],
+    s = sorted([x for x in folder.values() if "isFile" in x],
                key=lambda x: x["date"],
                reverse=True)
     return s if unlimited else s[:count]
