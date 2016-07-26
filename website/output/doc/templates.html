@@ -1,33 +1,43 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>nanosite</title>
+    <title>nanosite - documentation</title>
     
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <link rel="stylesheet" href="/scripts/highlight/highlight.css">
-    <script src="/scripts/highlight/highlight.js"></script>
+    <link rel="stylesheet" href="http://localhost:8000/scripts/highlight/highlight.css">
+    <script src="http://localhost:8000/scripts/highlight/highlight.js"></script>
     <script>
       hljs.initHighlightingOnLoad();
     </script>
     
-    <link rel="stylesheet" href="/style.css">
+    <link rel="stylesheet" href="http://localhost:8000/style.css">
   </head>
   <body>
     <header>
-      <h1><a href="/index.html">nanosite</a></h1>
+      <h1><a href="http://localhost:8000/index.html">nanosite</a></h1>
       <nav>
 	<ul>
-	  <li><a href="/tutorial.html">Tutorial</a></li><li><a href="/doc/index.html">Documentation</a></li><li><a href="/packages.html">Packages</a></li><li><a href="/download.html">Download</a></li>
+	  <li><a href="http://localhost:8000/tutorial.html">Tutorial</a></li><li><a href="http://localhost:8000/doc/index.html">Documentation</a></li><li><a href="http://localhost:8000/packages.html">Packages</a></li><li><a href="http://localhost:8000/download.html">Download</a></li>
 	</ul>
       </nav>
     </header>
     
-<h2>template language</h2>
+<h2>documentation</h2>
 
 
 <article>
-  <p>In site generation, <code>.md+</code>, <code>.html+</code>, <code>.xml+</code> and <code>.tmpl</code> files are run through the template engine. The template engine operates on template expressions, which are surrounded by double curly braces <code>{{</code> <code>}}</code>. Each template is compiled against a <em>context</em>, which is a set of variables available to the template.</p>
+  <p>
+
+<ul>
+  <li><a href="http://localhost:8000/doc/templates.html">template language</a></li>
+  <li><a href="http://localhost:8000/doc/site-generation.html">site generation</a></li>
+  <li><a href="http://localhost:8000/doc/packages.html">packages</a></li>
+</ul>
+
+</p>
+<h1>template language</h1>
+<p>In site generation, <code>.md+</code>, <code>.html+</code>, <code>.xml+</code> and <code>.tmpl</code> files are run through the template engine. These files contain regular Markdown or HTML, interspersed with template expressions, which are surrounded by double curly braces <code>{{</code> <code>}}</code>. The template engine compiles these expressions into HTML by following the rules on this page. Each template is compiled against a <em>context</em>, which is a set of variables available to the template.</p>
 <p>Call the current context <code>context</code>. <code>context["key"]</code> denotes fetching the value of variable <code>key</code> from context <code>context</code>.</p>
 <ul>
 <li><a href="#fetch">fetch</a><ul>
@@ -37,6 +47,17 @@
 </li>
 <li><a href="#control-blocks">control blocks</a><ul>
 <li><a href="#if">#if</a></li>
+<li><a href="#for">#for</a></li>
+</ul>
+</li>
+<li><a href="#declarations">declarations</a><ul>
+<li><a href="#macro">#macro</a></li>
+<li><a href="#define">#define</a></li>
+</ul>
+</li>
+<li><a href="#escaping">escaping</a><ul>
+<li><a href="#escaping-html">escaping HTML</a></li>
+<li><a href="#escaping-curly-braces">escaping curly braces</a></li>
 </ul>
 </li>
 </ul>
@@ -45,20 +66,22 @@
 <p><strong>Syntax:</strong></p>
 <pre><code>{{ key }}
 </code></pre>
-<p><strong>Semantics:</strong> Evaluates to <code>context["key"]</code>. Can also grab nested entries with dot syntax: <code>{{ site.url }}</code> evaluates to <code>context["site"]["url"]</code>. By default, HTML is escaped. Use triple braces to grab variables containing HTML: <code>{{{ linkToMyInstagram }}}</code></p>
+<p><strong>Semantics:</strong> Evaluates to <code>context["key"]</code>. Can also grab nested entries with dot syntax: <code>{{ site.url }}</code> evaluates to <code>context["site"]["url"]</code>. By default, HTML is escaped. Use triple braces to circumvent escaping, for variables containing HTML: <code>{{{ linkToMyInstagram }}}</code></p>
 <p><strong>Examples:</strong></p>
 <ul>
-<li><code>{{ title }}</code> &rarr; <code>template language</code></li>
-<li><code>{{ site.url }}</code> &rarr; <code></code></li>
+<li><code>{{ title }}</code> &rarr; <code>documentation</code></li>
+<li><code>{{ site.url }}</code> &rarr; <code>http://localhost:8000</code></li>
 </ul>
 <h2><a name="macro-call"></a> macro call</h2>
 <p><strong>Syntax:</strong></p>
 <pre><code>{{ key [parameter1 ... parameterN] }}
 </code></pre>
-<p><strong>Semantics:</strong> If <code>context["key"]</code> is a macro, then call it with parameters <code>context</code>, <code>parameter1</code>, ... <code>parameterN</code>.</p>
+<p><strong>Semantics:</strong> If <code>context["key"]</code> is a macro, then call it with parameters <code>context</code>, <code>parameter1</code>, ... <code>parameterN</code>. Parameters can be literals &mdash; <code>23.5</code>, <code>"hello"</code> &mdash; or variable names &mdash; <code>posts</code>, <code>site.url</code>, in which case the contents of the variable will be passed to the macro. See <a href="#macro">declaring macros</a>.</p>
+<p>Triple braces work the same way as in <a href="#basic-fetch">basic fetch</a>, for macros that return HTML.</p>
 <p><strong>Examples:</strong></p>
 <ul>
 <li><code>{{ formatDate date }}</code> &rarr; <code>25 Jul 2016</code></li>
+<li><code>{{{ navigationPaneHTML }}}</code></li>
 </ul>
 <h1><a name="control-blocks"></a> control blocks</h1>
 <h2><a name="if"></a> #if</h2>
@@ -67,49 +90,74 @@
   [A]
 [{{ #elif key2 }}]
   [B]
-  ...
+...
 [{{ #else }}]
   [C]
 {{ #endif }}
 </code></pre>
-<p><strong>Semantics:</strong> If <code>context["key"]</code> evaluates to <code>True</code>, then evaluate code block <code>[A]</code>. Otherwise, if <code>context["key2"]</code> evaluates to <code>True</code>, then evaluate block <code>[B]</code>. ... If none of the conditions are met, evaluate block <code>[C]</code>. <code>#elif</code> and <code>#else</code> clauses are optional.</p>
+<p><strong>Semantics:</strong> If <code>context["key"]</code> evaluates to <code>True</code>, then evaluate code block <code>[A]</code>. Otherwise, if <code>context["key2"]</code> evaluates to <code>True</code>, then evaluate block <code>[B]</code>. Otherwise, evaluate the next <code>#elif</code> condition, and so on. If none of the conditions are met, evaluate block <code>[C]</code>. <code>#elif</code> and <code>#else</code> clauses are optional. <code>key</code> can contain spaces, i.e. in the case of a macro call.</p>
 <p><strong>Examples:</strong></p>
 <ul>
-<li>
-<p><code>{{ #if title }}{{ title }}{{ #endif }}</code> &rarr; <code>template language</code></p>
-</li>
-<li>
-<p>{{key [param1 param2 .. paramN]}}: if ctx["key"] is a function, then it will be called with parameters [ctx], [param1], .. [paramN].</p>
+<li><code>{{ #if title }}{{ title }}{{ #endif }}</code> &rarr; <code>documentation</code></li>
+<li><code>{{ #if isPrime 5 }}5 is prime!{{ #endif }}</code> &rarr; <code>5 is prime!</code></li>
+</ul>
+<h2><a name="for"></a> #for</h2>
+<p><strong>Syntax:</strong></p>
+<pre><code>{{ #for x in key }}
+  ...
+{{ #endfor }}
+</code></pre>
+<p><strong>Semantics:</strong> If <code>context["key"]</code> is a collection, then iterate through its items. (<code>key</code> can contain spaces, i.e. in the case of a macro call.) Run the code block for each value of <code>x</code> in <code>key</code>, where the code block can now access <code>x</code> as a variable.</p>
+<p><strong>Examples:</strong></p>
 <ul>
-<li>Supported types: int, string, float, identifier. For identifiers, grab their corresponding object. Ex: {{macro foo}} will call [macro] with parameter ctx["foo"].</li>
+<li>List the newest 5 post titles:<pre><code>{{ #for post in newest 5 posts }}
+  &lt;div&gt;{{ post.title }}&lt;/div&gt;
+{{ #endif }}
+</code></pre>
+</li>
 </ul>
+<h1><a name="declarations"></a> declarations</h1>
+<h2><a name="macro"></a> #macro</h2>
+<p><strong>Syntax:</strong></p>
+<pre><code>{{ #macro name [parameter1 ... parameterN] }}
+  ...
+{{ #endmacro }}
+</code></pre>
+<p><strong>Semantics:</strong> Declares a macro named <code>name</code> that takes parameters <code>context</code>, <code>parameter1</code>, ..., <code>parameterN</code>, and returns the contents of the code block. In the inner code block, the parameters are bound to the values they were called with.</p>
+<p><strong>Examples:</strong></p>
+<ul>
+<li>Macro to create HTML links:<pre><code>{{ #macro createLink url text }}
+  &lt;a href="{{ url }}"&gt;{{ text }}&lt;/a&gt;
+{{ #endmacro }}
+
+{{{ createLink "http://google.com/" "Go to Google" }}}
+</code></pre>
 </li>
-<li>{{ #for x in key }}: if ctx["key"] is a collection, loop through its items</li>
-<li>[key] can span spaces, allowing for macro calls: "newest 5 posts" calls macro [newest] with parameters 5, ctx["posts"]</li>
-<li>{{#endfor}}: end of for loop</li>
-<li>{{#if key}}: execute block if ctx["key"] evaluates to True</li>
-<li>{{#elif key}}: execute block if ctx["key"] evaluates to True and previous if/elifs evaluated to false</li>
-<li>{{#else}}: execute block if all previous if/elifs evaluated to false</li>
-<li>{{#endif}}: end of if block</li>
-<li>{{#macro name [param1 param2 .. paramN]}}: begins a macro block. ctx[name] becomes a function that fills in the contents of the macro block using the given parameters as additional context variables, and returns the result (like a template)</li>
-<li>Macros cannot be nested inside of any other block</li>
-<li>Within a file, macros must be declared before they are used</li>
-<li>{{#endmacro}}: end of macro block</li>
-<li>{{#define name value}}: sets ctx[name] to [value] where value is a literal (int, string, float) or identifier.</li>
-<li>
-<p>As with #for, [value] can span spaces, allowing for macro calls</p>
-</li>
-<li>
-<p>Keys can be nested with dot notation, e.g. if ctx = {"key": {"a": 3}}, then "key.a" will fetch the value 3 (this works for dictionary entries as well as object attributes)</p>
-</li>
-<li>Delimiters can be escaped with a backlash, and the template compiler will ignore them. In the site generator, \{{ will output {{, and \}} will output }}</li>
 </ul>
+<h2><a name="define"></a> #define</h2>
+<p><strong>Syntax:</strong></p>
+<pre><code>{{ #define key value }}
+</code></pre>
+<p><strong>Semantics:</strong> Declares a variable <code>key</code> with value <code>value</code>, where <code>value</code> can contain spaces, i.e. in the case of a macro call.</p>
+<p><strong>Examples:</strong></p>
+<ul>
+<li><code>{{ #define x 3 }}</code></li>
+<li><code>{{ #define recentPosts newest 5 posts }}</code>  </li>
+</ul>
+<h1><a name="escaping"></a> escaping</h1>
+<h2><a name="escaping-html"></a> escaping HTML</h2>
+<p>By default, everything in double curly braces <code>{{</code> <code>}}</code> will be HTML-escaped, meaning special HTML characters will be translated into HTML unicode escape codes. This prevents things like angle brackets <code>&lt;</code> <code>&gt;</code> from corrupting the page.</p>
+<p>To circumvent this, enclose your expression in triple braces <code>{{{</code> <code>}}}</code>. This is useful for inserting HTML onto your page.</p>
+<h2><a name="escaping-curly-braces"></a> escaping curly braces</h2>
+<p>Delimiters can be escaped with a backslash, and the template compiler will ignore them. In the site generator, <code>\{{</code> will output <code>{{</code>, and <code>\}}</code> will output <code>}}</code>.</p>
+<p>Note that Markdown has its own backslash escaping, so except for code blocks and links, you will need to use double backslashes: <code>\\{{</code>.</p>
 </article>
 
     <footer>
-      <div><small>Copyright Andrew Wang. Powered by <a href="/index.html">nanosite</a>.</small></div>
+      <div><small>Copyright Andrew Wang. Powered by <a href="http://localhost:8000/index.html">nanosite</a>.</small></div>
     </footer>
   </body>
   
 </html>
+
 

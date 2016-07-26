@@ -11,7 +11,7 @@ from socketserver import TCPServer
 from threading import Thread
 from atexit import register as atexit_register
 
-def update(top, ctx, handler):
+def update(top, ctx, handler, port):
     def last_update_time(walk, ignore=[], last_t=None):
         # getmtime may fail if files changed since os.walk call
         def mtime_or_zero(path):
@@ -41,11 +41,14 @@ def update(top, ctx, handler):
     while True:
         if needs_update:
             needs_update = False
-            try:
-                mf = build.make_site(top, ctx)
+            try:  # attempt to build site
+                end_slash = "/" if "site" in ctx and "url" in ctx["site"] and \
+                            ctx["site"]["url"][-1] == "/" else ""
+                fake_url = "http://localhost:" + str(port) + end_slash
+                mf = build.make_site(top, ctx, fake_url=fake_url)
                 handler.error = None
                 print("[" + str(datetime.now()) + "]", "Built site.")
-            except:
+            except:  # if error occurred, display it
                 last_t = None
                 mf = []
                 trace_print_exc()
@@ -79,7 +82,7 @@ def run_server(port, site_dir, ctx):
     atexit_register(lambda: httpd.shutdown())
     
     # start update thread
-    thread = Thread(target=update, args=(site_dir, ctx, handler))
+    thread = Thread(target=update, args=(site_dir, ctx, handler, port))
     thread.daemon = True
     thread.start()
     

@@ -1,28 +1,17 @@
-nanosite: static site generator
+title: documentation
 
-Template language (given context ctx).
-- {{key}}: replaced with ctx["key"], HTML characters escaped
-  - {{key [param1 param2 .. paramN]}}: if ctx["key"] is a function, then it will be called with parameters [ctx], [param1], .. [paramN]. Supported types: int, string, float, identifier. For identifiers, grab their corresponding object. Ex: {{macro foo}} will call [macro] with parameter ctx["foo"].
-- {{{key}}}: replaced with ctx["key"], no escape (i.e. for HTML insertion)
-- {{#for x in key}}: if ctx["key"] is a collection, loop through its items
-  - [key] can span spaces, allowing for macro calls: "newest 5 posts" calls macro [newest] with parameters 5, ctx["posts"]
-- {{#endfor}}: end of for loop
-- {{#if key}}: execute block if ctx["key"] evaluates to True
-- {{#elif key}}: execute block if ctx["key"] evaluates to True and previous if/elifs evaluated to false
-- {{#else}}: execute block if all previous if/elifs evaluated to false
-- {{#endif}}: end of if block
-- {{#macro name [param1 param2 .. paramN]}}: begins a macro block. ctx[name] becomes a function that fills in the contents of the macro block using the given parameters as additional context variables, and returns the result (like a template)
-  - Macros cannot be nested inside of any other block
-  - Within a file, macros must be declared before they are used
-- {{#endmacro}}: end of macro block
-- {{#define name value}}: sets ctx[name] to [value] where value is a literal (int, string, float) or identifier.
-  - As with #for, [value] can span spaces, allowing for macro calls
+{{{ docMenu }}}
 
-- Keys can be nested with dot notation, e.g. if ctx = {"key": {"a": 3}}, then "key.a" will fetch the value 3 (this works for dictionary entries as well as object attributes)
-- Delimiters can be escaped with a backlash, and the template compiler will ignore them. In the site generator, \{{ will output {{, and \}} will output }}
+# site generation
 
+During site generation, each file is processed and the result is placed in the corresponding path in the output folder. Thus, the directory structure of your project is the directory structure of your site.
 
-Site generation.
+Files are processed as follows:
+
+- `.md`, `.md+`, `.html+` and  files are *content files*. They
+- `.xml+` files
+- All other files are left as is.
+
 1. Create a context with meta.json (which contains a dictionary) and macros.py
   - meta.json meta [key: value] pairs will be directly added to the context
   - macros.py is executed. The function [macro(s, fun)] is exposed, where [s] is the name of the context key that will invoke the macro, and [fun] is a lambda expression [lambda: ctx [, params] = ...] that takes in context [ctx] and outputs any stringable value. When the macro is invoked through {{key}}, the lambda expression is called with the current file's context as the parameter. These macros are all added to the context. Ex: macro("example", lambda: ctx = fetch("site.url")) declares a macro that fetches the site.url property from the context when invoked with {{example}}.
@@ -43,9 +32,10 @@ Site generation.
   - Files with extensions other than .md, .md+, .html+ and .xml+ are simply copied to the output folder.
 
 
-Packages.
+# packages
 Calling "nanosite import [name]" will import a package.
 If [name] isn't already in the ".nanosite" file's "installed-packages" array:
+
 1. Search for package file
   a. Check [name].zip in top-level of site directory
   b. Check [package-url]/[name].zip where [package-url] is the value of the "package-url" entry in the site's ".nanosite" file. Download this to site root.
@@ -58,34 +48,8 @@ If [name] isn't already in the ".nanosite" file's "installed-packages" array:
   b. Delete [name].zip if downloaded from [package-url]
 
 
-rules.json
-{
-  "files": {
-    "[filename1.ext]": {"dest": [destination-path], "action": "[a or w]"}
-    ...
-  },
-  "dependencies": [
-    "[dependency-name-1]", ...
-  ]
-}
+# context namespace map
 
-
-Server.
-The server serves a preview of the page on localhost:8000 (set port via the --port option). As a convenience feature, set context["site"]["url"] to "http://localhost:[port]" (with a trailing slash iff the original site.url had a trailing slash), meaning all links to the site URL will redirect to the local preview.
-
-
-.nanosite
-{
-  "package-url": "[url]",
-  "installed-packages": ["[pkg-name-1]", ...]
-}
-
-
-Publishing.
-Calling "nanosite publish" will run the publish script in the meta directory: either "publish.bat" on Windows, or "publish" on other platforms. You must customize the script to fit your needs.
-
-
-Context namespace map.
 - Top-level directory names
 - Entries declared in meta/meta.json and meta/macros.py
 - Meta entries if current file is a Markdown file
@@ -93,23 +57,24 @@ Context namespace map.
 - "MetaDir", "OutputDir"
 
 
-Directory structure.
-site/
-  [index.html+]
-  [archive.html+]
-  output/ <- OutputDir
-  meta/   <- MetaDir
-    master.tmpl
-    meta.json
-    macros.py
-  [pages]/
-    template.tmpl
-    [Life]/
-      [funstuff.md]
-    [Work]/
-      template.tmpl
-      [meetings.md]
-  [posts]/
-    template.tmpl
-    [hello.md+]
-    [codesamples.md+]
+# example directory structure
+
+	site/
+	  [index.html+]
+	  [archive.html+]
+	  output/ <- OutputDir
+	  meta/   <- MetaDir
+		master.tmpl
+		meta.json
+		macros.py
+	  [pages]/
+		template.tmpl
+		[Life]/
+		  [funstuff.md]
+		[Work]/
+		  template.tmpl
+		  [meetings.md]
+	  [posts]/
+		template.tmpl
+		[hello.md+]
+		[codesamples.md+]

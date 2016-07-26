@@ -183,11 +183,13 @@ def register_macros(top, ctx):
     return ctx
 
 # returns array of absolute paths of the files modified
-def make_site(top, ctx):
+# if fake_url, then set site.url to fake_url in ctx, for local preview
+def make_site(top, ctx, fake_url=None):
     templates.clear_template_cache()
 
     # load meta variables
     ctx = load_meta(top, ctx)
+    if fake_url: ctx["site"]["url"] = fake_url
 
     # register macros
     ctx = register_macros(top, ctx)

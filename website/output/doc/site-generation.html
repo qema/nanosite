@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>nanosite - documentation</title>
+    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link rel="stylesheet" href="http://localhost:8000/scripts/highlight/highlight.css">
+    <script src="http://localhost:8000/scripts/highlight/highlight.js"></script>
+    <script>
+      hljs.initHighlightingOnLoad();
+    </script>
+    
+    <link rel="stylesheet" href="http://localhost:8000/style.css">
+  </head>
+  <body>
+    <header>
+      <h1><a href="http://localhost:8000/index.html">nanosite</a></h1>
+      <nav>
+	<ul>
+	  <li><a href="http://localhost:8000/tutorial.html">Tutorial</a></li><li><a href="http://localhost:8000/doc/index.html">Documentation</a></li><li><a href="http://localhost:8000/packages.html">Packages</a></li><li><a href="http://localhost:8000/download.html">Download</a></li>
+	</ul>
+      </nav>
+    </header>
+    
+<h2>documentation</h2>
+
+
+<article>
+  <p>
+
+<ul>
+  <li><a href="http://localhost:8000/doc/templates.html">template language</a></li>
+  <li><a href="http://localhost:8000/doc/site-generation.html">site generation</a></li>
+  <li><a href="http://localhost:8000/doc/packages.html">packages</a></li>
+</ul>
+
+</p>
+<h1>site generation</h1>
+<p>During site generation, each file is processed and the result is placed in the corresponding path in the output folder. Thus, the directory structure of your project is the directory structure of your site.</p>
+<p>Files are processed as follows:</p>
+<ul>
+<li><code>.md</code>, <code>.md+</code>, <code>.html+</code> and  files are <em>content files</em>. They</li>
+<li><code>.xml+</code> files</li>
+<li>
+<p>All other files are left as is.</p>
+</li>
+<li>
+<p>Create a context with meta.json (which contains a dictionary) and macros.py</p>
+</li>
+<li>meta.json meta [key: value] pairs will be directly added to the context</li>
+<li>macros.py is executed. The function [macro(s, fun)] is exposed, where [s] is the name of the context key that will invoke the macro, and [fun] is a lambda expression [lambda: ctx [, params] = ...] that takes in context [ctx] and outputs any stringable value. When the macro is invoked through None, the lambda expression is called with the current file's context as the parameter. These macros are all added to the context. Ex: macro("example", lambda: ctx = fetch("site.url")) declares a macro that fetches the site.url property from the context when invoked with None.<ul>
+<li>fetch(ctx, key) is also exposed, which allows access of context variables through dot notation. Ex: fetch(ctx, "site.url").</li>
+</ul>
+</li>
+<li>Master template is run once in order to register global variables and macros (the site directory is registered in the context for these macros to access). The output is not kept.</li>
+<li>Traverse the site directory and its subdirectories, creating corresponding built files in respective paths in OutputDir.</li>
+<li>
+<p>Pipeline: a) File -&gt; b) Local template -&gt; c) Master template
+    a) Each file gets turned into a dictionary which is passed to the local template.</p>
+<ul>
+<li>
+<p>Each file gets a context with a view of the directory tree, with names in lowercase and with all periods replaced with underscores (so ex.txt -&gt; ex_txt)</p>
+<ul>
+<li>Directories are represented by dictionaries with key name equal to lowercased directory name</li>
+<li>Each file in the directory tree has properties is_file = True, path (path of output file [with the extension of the output file], relative to site top), template_path (path of its local template), and date (time struct) which contains the last date modified.</li>
+</ul>
+</li>
+<li>
+<p>.md/.md+ files become {"content": [html-compiled content], [meta-key-1]: [meta-value-1], ...} where the meta entries come from the Markdown meta section. For .md files, escape delimiters so they aren't compiled as templates.</p>
+</li>
+<li>.html+ files become {"content": [c]} where c is the file's contents.</li>
+<li>.xml+ files are compiled against themselves.
+b) .md, md+, and .html+ files are compiled against the local template, which is the template in the shallowest parent directory of the file that contains a template.tmpl file.
+c) .md, md+, and .html+ files are compiled against the master template.</li>
+<li>Files with extensions other than .md, .md+, .html+ and .xml+ are simply copied to the output folder.</li>
+</ul>
+</li>
+</ul>
+<h1>packages</h1>
+<p>Calling "nanosite import [name]" will import a package.
+If [name] isn't already in the ".nanosite" file's "installed-packages" array:</p>
+<ol>
+<li>Search for package file
+  a. Check [name].zip in top-level of site directory
+  b. Check [package-url]/[name].zip where [package-url] is the value of the "package-url" entry in the site's ".nanosite" file. Download this to site root.</li>
+<li>Install package
+  a. Open "rules.json" in [name].zip. It should be a dictionary { }. Call it rules.
+  b. Install dependencies: go through the import routine for each list item (dependency name) in rules["dependencies"].
+  c. For each key (filename) in rules["files"], call its corresponding value rule. Get the destination path dest by compiling rule["dest"] against the default context (specifically with "OutputDir" and "MetaDir" entries). dest should be relative to the site top directory. Open dest with file mode rule["action"] ("a" for append, "w" for write) and write the contents of the file from [name].zip.</li>
+<li>Finalize
+  a. Add [name] to the array in the ".nanosite" file's "installed-packages" entry
+  b. Delete [name].zip if downloaded from [package-url]</li>
+</ol>
+<h1>context namespace map</h1>
+<ul>
+<li>Top-level directory names</li>
+<li>Entries declared in meta/meta.json and meta/macros.py</li>
+<li>Meta entries if current file is a Markdown file</li>
+<li>"content": contains the content for the current template</li>
+<li>"MetaDir", "OutputDir"</li>
+</ul>
+<h1>example directory structure</h1>
+<pre><code>site/
+  [index.html+]
+  [archive.html+]
+  output/ &lt;- OutputDir
+  meta/   &lt;- MetaDir
+    master.tmpl
+    meta.json
+    macros.py
+  [pages]/
+    template.tmpl
+    [Life]/
+      [funstuff.md]
+    [Work]/
+      template.tmpl
+      [meetings.md]
+  [posts]/
+    template.tmpl
+    [hello.md+]
+    [codesamples.md+]
+</code></pre>
+</article>
+
+    <footer>
+      <div><small>Copyright Andrew Wang. Powered by <a href="http://localhost:8000/index.html">nanosite</a>.</small></div>
+    </footer>
+  </body>
+  
+</html>
+
+

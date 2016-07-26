@@ -1,6 +1,10 @@
-title: template language
+title: documentation
 
-In site generation, `.md+`, `.html+`, `.xml+` and `.tmpl` files are run through the template engine. The template engine operates on template expressions, which are surrounded by double curly braces `\{{` `\}}`. Each template is compiled against a *context*, which is a set of variables available to the template.
+{{{ docMenu }}}
+
+# template language
+
+In site generation, `.md+`, `.html+`, `.xml+` and `.tmpl` files are run through the template engine. These files contain regular Markdown or HTML, interspersed with template expressions, which are surrounded by double curly braces `\{{` `\}}`. T Each template is compiled against a *context*, which is a set of variables available to the template.
 
 Call the current context `context`. `context["key"]` denotes fetching the value of variable `key` from context `context`.
 
@@ -9,6 +13,13 @@ Call the current context `context`. `context["key"]` denotes fetching the value 
     - [macro call](#macro-call)
 - [control blocks](#control-blocks)
     - [\#if](#if)
+    - [\#for](#for)
+- [declarations](#declarations)
+    - [\#macro](#macro)
+    - [\#define](#define)
+- [escaping](#escaping)
+    - [escaping HTML](#escaping-html)
+    - [escaping curly braces](#escaping-curly-braces)
 
 # <a name="fetch"></a> fetch
 
@@ -17,7 +28,7 @@ Call the current context `context`. `context["key"]` denotes fetching the value 
 
     \{{ key \}}
 	
-**Semantics:** Evaluates to `context["key"]`. Can also grab nested entries with dot syntax: `\{{ site.url \}}` evaluates to `context["site"]["url"]`. By default, HTML is escaped. Use triple braces to grab variables containing HTML: `\{{{ linkToMyInstagram \}}}`
+**Semantics:** Evaluates to `context["key"]`. Can also grab nested entries with dot syntax: `\{{ site.url \}}` evaluates to `context["site"]["url"]`. By default, HTML is escaped. Use triple braces to circumvent escaping, for variables containing HTML: `\{{{ linkToMyInstagram \}}}`
 
 **Examples:**
 
@@ -29,11 +40,14 @@ Call the current context `context`. `context["key"]` denotes fetching the value 
 
     \{{ key [parameter1 ... parameterN] \}}
 	
-**Semantics:** If `context["key"]` is a macro, then call it with parameters `context`, `parameter1`, ... `parameterN`.
+**Semantics:** If `context["key"]` is a macro, then call it with parameters `context`, `parameter1`, ... `parameterN`. Parameters can be literals &mdash; `23.5`, `"hello"` &mdash; or variable names &mdash; `posts`, `site.url`, in which case the contents of the variable will be passed to the macro. See [declaring macros](#macro).
+
+Triple braces work the same way as in [basic fetch](#basic-fetch), for macros that return HTML.
 
 **Examples:**
 
 - `\{{ formatDate date \}}` &rarr; `{{ formatDate date }}`
+- `\{{{ navigationPaneHTML \}}}`
 
 # <a name="control-blocks"></a> control blocks
 
@@ -44,32 +58,77 @@ Call the current context `context`. `context["key"]` denotes fetching the value 
 	  [A]
 	[\{{ #elif key2 \}}]
 	  [B]
-	  ...
+	...
 	[\{{ #else \}}]
 	  [C]
 	\{{ #endif \}}
 	
-**Semantics:** If `context["key"]` evaluates to `True`, then evaluate code block `[A]`. Otherwise, if 
+**Semantics:** If `context["key"]` evaluates to `True`, then evaluate code block `[A]`. Otherwise, if `context["key2"]` evaluates to `True`, then evaluate block `[B]`. Otherwise, evaluate the next `#elif` condition, and so on. If none of the conditions are met, evaluate block `[C]`. `#elif` and `#else` clauses are optional. `key` can contain spaces, i.e. in the case of a macro call.
 
 **Examples:**
 
-- `\{{ formatDate date \}}` &rarr; `{{ formatDate date }}`
+- `\{{ #if title \}}\{{ title \}}\{{ #endif \}}` &rarr; `{{ title }}`
+- `\{{ #if isPrime 5 \}}5 is prime!\{{ #endif }}` &rarr; `5 is prime!`
 
-  - \\{{key [param1 param2 .. paramN]\\}}: if ctx["key"] is a function, then it will be called with parameters [ctx], [param1], .. [paramN].
-    - Supported types: int, string, float, identifier. For identifiers, grab their corresponding object. Ex: \\{{macro foo\\}} will call [macro] with parameter ctx["foo"].
-- \\{{ #for x in key \\}}: if ctx["key"] is a collection, loop through its items
-  - [key] can span spaces, allowing for macro calls: "newest 5 posts" calls macro [newest] with parameters 5, ctx["posts"]
-- \\{{#endfor\\}}: end of for loop
-- \\{{#if key\\}}: execute block if ctx["key"] evaluates to True
-- \\{{#elif key\\}}: execute block if ctx["key"] evaluates to True and previous if/elifs evaluated to false
-- \\{{#else\\}}: execute block if all previous if/elifs evaluated to false
-- \\{{#endif\\}}: end of if block
-- \\{{#macro name [param1 param2 .. paramN]\\}}: begins a macro block. ctx[name] becomes a function that fills in the contents of the macro block using the given parameters as additional context variables, and returns the result (like a template)
-  - Macros cannot be nested inside of any other block
-  - Within a file, macros must be declared before they are used
-- \\{{#endmacro\\}}: end of macro block
-- \\{{#define name value\\}}: sets ctx[name] to [value] where value is a literal (int, string, float) or identifier.
-  - As with #for, [value] can span spaces, allowing for macro calls
+## <a name="for"></a> #for
+**Syntax:**
 
-- Keys can be nested with dot notation, e.g. if ctx = {"key": {"a": 3\\}}, then "key.a" will fetch the value 3 (this works for dictionary entries as well as object attributes)
-- Delimiters can be escaped with a backlash, and the template compiler will ignore them. In the site generator, \\\\{{ will output \\{{, and \\\\}} will output \\}}
+    \{{ #for x in key \}}
+	  ...
+	\{{ #endfor \}}
+	
+**Semantics:** If `context["key"]` is a collection, then iterate through its items. (`key` can contain spaces, i.e. in the case of a macro call.) Run the code block for each value of `x` in `key`, where the code block can now access `x` as a variable.
+
+**Examples:**
+
+- List the newest 5 post titles:
+
+        \{{ #for post in newest 5 posts \}}
+          <div>\{{ post.title \}}</div>
+    	\{{ #endif \}}
+
+# <a name="declarations"></a> declarations
+
+## <a name="macro"></a> #macro
+**Syntax:**
+
+    \{{ #macro name [parameter1 ... parameterN] \}}
+	  ...
+	\{{ #endmacro \}}
+	
+**Semantics:** Declares a macro named `name` that takes parameters `context`, `parameter1`, ..., `parameterN`, and returns the contents of the code block. In the inner code block, the parameters are bound to the values they were called with.
+
+**Examples:**
+
+- Macro to create HTML links:
+
+        \{{ #macro createLink url text \}}
+		  <a href="\{{ url \}}">\{{ text \}}</a>
+		\{{ #endmacro \}}
+		
+		\{{{ createLink "http://google.com/" "Go to Google" \}}}
+
+## <a name="define"></a> #define
+**Syntax:**
+
+    \{{ #define key value \}}
+	
+**Semantics:** Declares a variable `key` with value `value`, where `value` can contain spaces, i.e. in the case of a macro call.
+
+**Examples:**
+
+- `\{{ #define x 3 \}}`
+- `\{{ #define recentPosts newest 5 posts \}}`	
+		
+# <a name="escaping"></a> escaping
+
+## <a name="escaping-html"></a> escaping HTML
+By default, everything in double curly braces `\{{` `\}}` will be HTML-escaped, meaning special HTML characters will be translated into HTML unicode escape codes. This prevents things like angle brackets `<` `>` from corrupting the page.
+
+To circumvent this, enclose your expression in triple braces `\{{{` `\}}}`. This is useful for inserting HTML onto your page.
+
+## <a name="escaping-curly-braces"></a> escaping curly braces
+Delimiters can be escaped with a backslash, and the template compiler will ignore them. In the site generator, `\\{{` will output `\{{`, and `\\}}` will output `\}}`.
+
+Note that Markdown has its own backslash escaping, so except for code blocks and links, you will need to use double backslashes: `\\\{{`.
+

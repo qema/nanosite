@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>{{site.title}}</title>
+    <title>{{ site.title }}{{ #if title }} - {{ title }}{{ #endif }}</title>
     
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
@@ -24,9 +24,18 @@
     </header>
     {{{content}}}
     <footer>
-      <div><small>Copyright {{site.author}}. Powered by <a href="{{site.url}}/index.html">nanosite</a>.</small></div>
+      <div><small>Copyright {{ site.author }}. Powered by <a href="{{site.url}}/index.html">nanosite</a>.</small></div>
     </footer>
   </body>
   
 </html>
 
+{{ #macro docMenu }}
+
+<ul>
+  <li><a href="{{site.url}}/doc/templates.html">template language</a></li>
+  <li><a href="{{site.url}}/doc/site-generation.html">site generation</a></li>
+  <li><a href="{{site.url}}/doc/packages.html">packages</a></li>
+</ul>
+
+{{ #endmacro }}
