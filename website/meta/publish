@@ -1,9 +1,0 @@
-#!/bin/bash
-# This script is run during `nanosite publish`
-
-nanosite clean
-nanosite build -o ~/dev/qema.github.io/nanosite
-
-pushd ~/dev/qema.github.io/
-nanosite publish
-popd

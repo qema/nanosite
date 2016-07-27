@@ -5,8 +5,8 @@ setup(
     author = "Andrew Wang",
     author_email = "azw7@cornell.edu",
     url = "https://github.com/qema/nanosite",
-    description="Speedy static site generator in Python.",
-    version = "0.1.4",
+    description = "Speedy static site generator in Python.",
+    version = "0.1.5",
     packages = ["nanosite"],
     install_requires = ["markdown"],
     entry_points = {
