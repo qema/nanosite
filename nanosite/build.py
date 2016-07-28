@@ -112,7 +112,8 @@ def add_dirtree_file(top, path, ctx, template_path):
 
     out_dict["isFile"] = True
     out_dict["inputPath"] = os.path.relpath(path, top)
-    out_dict["path"] = os.path.splitext(os.path.relpath(path, top))[0] + new_ext
+    out_dict["path"] = util.forward_slash_path(os.path.splitext(
+        os.path.relpath(path, top))[0] + new_ext)
     out_dict["templatePath"] = template_path
     out_dict["date"] = localtime(os.path.getmtime(path))
     return out_dict

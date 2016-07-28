@@ -3,6 +3,9 @@ import markdown
 import shutil
 import subprocess
 
+def forward_slash_path(path):
+    return path.replace("\\", "/") if os.name == "nt" else path
+
 def same_path(a, b):
     return os.path.abspath(a).lower() == os.path.abspath(b).lower()
 
