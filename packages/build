@@ -1,0 +1,12 @@
+#!/bin/bash
+
+# build all packages
+
+mkdir output
+for dir in */ ; do
+    if [ $dir != "output/" ]
+       then
+	   echo "building $dir"
+	   zip -r output/$(basename $dir).zip $dir
+    fi
+done

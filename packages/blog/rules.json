@@ -9,5 +9,6 @@
     "posts/template.tmpl": {"dest": "posts/template.tmpl", "action": "w"},
     "posts/your-blog-posts-here.md": {"dest": "posts/your-blog-posts-here.md", "action": "w"}
   },
-  "dependencies": ["date", "menu"]
+  "dependencies": ["date", "menu"],
+  "version": "1.0.0"
 }

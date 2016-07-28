@@ -1,7 +1,7 @@
 import os
 import markdown
-import shutil
-import subprocess
+from shutil import rmtree
+from subprocess import call as subprocess_call
 
 def forward_slash_path(path):
     return path.replace("\\", "/") if os.name == "nt" else path
@@ -23,7 +23,7 @@ def compile_markdown(md_text):
 def clean_output_dir(site_dir, output_dir):
     path = os.path.join(site_dir, output_dir)
     if os.path.isdir(path):
-        shutil.rmtree(path)
+        rmtree(path)
         print("Cleaned output directory.")
     else:
         print("Nothing to clean.")
@@ -34,13 +34,13 @@ def delete_site_dir(top):
         if os.path.isfile(path):
             os.unlink(path)
         elif os.path.isdir(path):
-            shutil.rmtree(path)
+            rmtree(path)
     
 def publish_site(top, meta_dir):
     cur_dir = os.getcwd()
     os.chdir(top)
     # run publish script from site top directory
-    subprocess.call(os.path.join(top, meta_dir, "publish"))
+    subprocess_call(os.path.join(top, meta_dir, "publish"))
     os.chdir(cur_dir)
     print("Finished running publish script.")
 

@@ -1,5 +1,6 @@
 {
   "files": {
     "rss.xml+": {"dest": "rss.xml+", "action": "w"}
-  }
+  },
+  "version": "1.0.0"
 }

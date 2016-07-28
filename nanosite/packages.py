@@ -6,6 +6,7 @@ from zipfile import ZipFile
 import json
 from urllib.request import urlopen
 from urllib.parse import urljoin
+from distutils.version import LooseVersion
 
 DefaultPackageURL = "http://wanganzhou.com/nanosite/packages/"
 
@@ -37,14 +38,22 @@ def download_package(name, package_url, dest):
 # f: ZipFile object of package file
 # dot_nanosite: contents of .nanosite file (loaded from JSON)
 # force: whether to force override
+# returns (success (bool), status (string))
 def install_package(name, f, dot_nanosite, top, ctx, force=False):
-    with f.open("rules.json", "rU") as rules_file:
+    with f.open("rules.json", "r") as rules_file:
         rules = json.loads(rules_file.read().decode("utf-8"))
         files = rules["files"] if "files" in rules else {}
         dependencies = rules["dependencies"] if "dependencies" in rules else []
+        version = rules["version"] if "version" in rules else "0.0.0"
 
-        # check dependencies
+        # check if package already installed
         installed_packages = dot_nanosite["installed-packages"]
+        if name in installed_packages and \
+           LooseVersion(installed_packages[name]["version"]) >= \
+           LooseVersion(version) and not force:
+            return False, name + " already installed"
+        
+        # check dependencies
         for dependency in dependencies:
             if dependency not in installed_packages:
                 print("Installing dependency", dependency)
@@ -73,22 +82,23 @@ def install_package(name, f, dot_nanosite, top, ctx, force=False):
             rule = files[filename]
             dest = os.path.join(top, templates.fill_template(rule["dest"],
                                                              ctx))
+            action = rule["action"]
             
             os.makedirs(os.path.dirname(dest), exist_ok=True)
             with f.open(filename, "r") as src_file:
-                with open(dest, rule["action"]) as dest_file:
+                with open(dest, action) as dest_file:
                     dest_file.write(src_file.read().decode("utf-8"))
 
         # add to list of installed packages
         if name not in installed_packages:
-            installed_packages.append(name)
+            installed_packages[name] = {"version": version}
         dot_nanosite["installed-packages"] = installed_packages
         with open(os.path.join(top, ".nanosite"), "w") as dnf:
             json.dump(dot_nanosite, dnf, indent=2)
     return True, ""
     
-# returns (success (bool), status (string))
 # force: whether to force override
+# returns (success (bool), status (string))
 def import_package(name, top, ctx, force=False):
     name = name.lower()
     
@@ -96,10 +106,9 @@ def import_package(name, top, ctx, force=False):
     with open(os.path.join(top, ".nanosite"), "r") as f:
         dot_nanosite = json.loads(f.read())
         if "installed-packages" not in dot_nanosite:
-            dot_nanosite["installed-packages"] = []
+            dot_nanosite["installed-packages"] = {}
         if "package-url" not in dot_nanosite:
             dot_nanosite["package-url"] = DefaultPackageURL
-        installed_packages = dot_nanosite["installed-packages"]
         package_url = dot_nanosite["package-url"]
 
         # remove trailing slashes in MetaDir and OutputDir if needed
@@ -107,10 +116,6 @@ def import_package(name, top, ctx, force=False):
             ctx["MetaDir"] = ctx["MetaDir"][:-1]
         if "OutputDir" in ctx and ctx["OutputDir"][-1] == "/":
             ctx["OutputDir"] = ctx["OutputDir"][:-1]
-
-        # check if package already installed
-        if name in installed_packages and not force:
-            return False, name + " already installed"
 
         # check if package file is in site top. If not, download it
         filename = name + ".zip"

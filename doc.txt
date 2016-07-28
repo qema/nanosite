@@ -45,16 +45,16 @@ Site generation.
 
 Packages.
 Calling "nanosite import [name]" will import a package.
-If [name] isn't already in the ".nanosite" file's "installed-packages" array:
 1. Search for package file
   a. Check [name].zip in top-level of site directory
   b. Check [package-url]/[name].zip where [package-url] is the value of the "package-url" entry in the site's ".nanosite" file. Download this to site root.
 2. Install package
   a. Open "rules.json" in [name].zip. It should be a dictionary { }. Call it rules.
-  b. Install dependencies: go through the import routine for each list item (dependency name) in rules["dependencies"].
-  c. For each key (filename) in rules["files"], call its corresponding value rule. Get the destination path dest by compiling rule["dest"] against the default context (specifically with "OutputDir" and "MetaDir" entries). dest should be relative to the site top directory. Open dest with file mode rule["action"] ("a" for append, "w" for write) and write the contents of the file from [name].zip.
+  b. If [name] isn't already in the ".nanosite" file's "installed-packages" dictionary, OR the version number rules["version"] is higher than the current installed version (by distutils.version's LooseVersion comparison):
+  c. Install dependencies: go through the import routine for each list item (dependency name) in rules["dependencies"].
+  d. For each key (filename) in rules["files"], call its corresponding value rule. Get the destination path dest by compiling rule["dest"] against the default context (specifically with "OutputDir" and "MetaDir" entries). dest should be relative to the site top directory. Open dest with file mode rule["action"] ("a" for append, "w" for write) and write the contents of the file from [name].zip.
 3. Finalize
-  a. Add [name] to the array in the ".nanosite" file's "installed-packages" entry
+  a. Add [name] to the dictionary in the ".nanosite" file's "installed-packages" entry, with value {"version": "[rules['version']]"}
   b. Delete [name].zip if downloaded from [package-url]
 
 
@@ -66,7 +66,8 @@ rules.json
   },
   "dependencies": [
     "[dependency-name-1]", ...
-  ]
+  ],
+  "version": "[version]"
 }
 
 
@@ -77,7 +78,10 @@ The server serves a preview of the page on localhost:8000 (set port via the --po
 .nanosite
 {
   "package-url": "[url]",
-  "installed-packages": ["[pkg-name-1]", ...]
+  "installed-packages": {
+    "[pkg-name-1]": {"version": "[version]"}
+    ...
+  }
 }
 
 
