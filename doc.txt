@@ -33,7 +33,7 @@ Site generation.
     a) Each file gets turned into a dictionary which is passed to the local template.
       - Each file gets a context with a view of the directory tree, with names in lowercase and with all periods replaced with underscores (so ex.txt -> ex_txt)
         - Directories are represented by dictionaries with key name equal to lowercased directory name
-        - Each file in the directory tree has properties isFile = True, content (compiled contents of the file), path (path of output file [with the extension of the output file], relative to site top), templatePath (path of its local template), and date (time struct) which contains the last date modified.
+        - Each file in the directory tree has properties isFile = True, content (compiled contents of the file), path (path of output file [with the extension of the output file], relative to site top -- possibly routed [see Routing]), templatePath (path of its local template), and date (time struct) which contains the last date modified.
 
       - .md/.md+ files become {"content": [html-compiled content], [meta-key-1]: [meta-value-1], ...} where the meta entries come from the Markdown meta section. For .md files, escape delimiters so they aren't compiled as templates.
       - .html+ files become {"content": [c]} where c is the file's contents.
@@ -41,6 +41,16 @@ Site generation.
     b) .md, md+, and .html+ files are compiled against the local template, which is the template in the shallowest parent directory of the file that contains a template.tmpl file.
     c) .md, md+, and .html+ files are compiled against the master template.
   - Files with extensions other than .md, .md+, .html+ and .xml+ are simply copied to the output folder.
+
+
+Routing.
+If the context has a "routes" entry, then this will be used to give files a custom output path. ctx["routes"] has this format:
+{
+  "input-part-1": "output-part-1",
+  "input-part-2": "output-part-2",
+  ...
+}
+All output paths starting with "input-part-x" will have this part replaced with "output-part-x". The input patterns are matched against paths relative to site top, with forward slashes on all platforms, and no leading slash.
 
 
 Packages.
@@ -95,6 +105,7 @@ Context namespace map.
 - Meta entries if current file is a Markdown file
 - "content": contains the content for the current template
 - "MetaDir", "OutputDir"
+- Hooks: "routes", "site.url"
 
 
 Directory structure.

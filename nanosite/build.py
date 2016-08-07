@@ -6,11 +6,25 @@ from shutil import copyfile
 from time import localtime
 import json
 
+# return possibly re-routed path using the routes defined in ctx["route"]
+def route_path(ctx, path):
+    if "routes" in ctx:
+        routes = ctx["routes"]
+        for in_pattern, out_pattern in routes.items():
+            if path.startswith(in_pattern):
+                path = path.replace(in_pattern, out_pattern)
+                break
+    if path and path[0] == "/": path = path[1:]
+    return path
+
 def build_file(top, node, ctx):
     assert(node["isFile"])
     
     path = os.path.join(top, node["inputPath"])
     root, ext = os.path.splitext(path)
+
+    out_path = os.path.join(top, ctx["OutputDir"], node["path"])
+    os.makedirs(os.path.dirname(out_path), exist_ok=True)
 
     modified_files = []
     if ext.lower() in {".md", ".md+", ".html+"}:  # compile against templates
@@ -37,9 +51,6 @@ def build_file(top, node, ctx):
         # remove escape symbols on delimiters
         out_html = templates.unescape_delimiters(out_html)
 
-        relpath = os.path.relpath(root + ".html", top)
-        out_path = os.path.join(top, ctx["OutputDir"], relpath)
-        os.makedirs(os.path.dirname(out_path), exist_ok=True)
         # create output file in output folder
         with open(out_path, "w") as f:
             # get/create output path
@@ -54,17 +65,10 @@ def build_file(top, node, ctx):
         # remove escape symbols on delimiters
         out_html = templates.unescape_delimiters(out_html)
         
-        relpath = os.path.relpath(root + ".xml", top)
-        out_path = os.path.join(top, ctx["OutputDir"], relpath)
-        os.makedirs(os.path.dirname(out_path), exist_ok=True)
-        
         with open(out_path, "w") as f:
             f.write(out_html)
         modified_files = [os.path.abspath(out_path)]
     else:   # copy file (make hard link on unix)
-        relpath = os.path.relpath(path, top)
-        out_path = os.path.join(top, ctx["OutputDir"], relpath)
-        os.makedirs(os.path.dirname(out_path), exist_ok=True)
         # copy if src and dest are different (i.e. OutputDir != ".")
         if not util.same_path(path, out_path):
             if os.name == "nt":
@@ -74,7 +78,10 @@ def build_file(top, node, ctx):
                 if not os.path.lexists(out_path) or \
                    os.path.getmtime(path) > os.path.getmtime(out_path):
                     #print("copying", path, "->", out_path)
-                    copyfile(path, out_path)
+                    try:
+                        copyfile(path, out_path)
+                    except:
+                        print("Warning: couldn't copy file", path)
             modified_files = [os.path.abspath(out_path)]
     return modified_files
     
@@ -112,8 +119,8 @@ def add_dirtree_file(top, path, ctx, template_path):
 
     out_dict["isFile"] = True
     out_dict["inputPath"] = os.path.relpath(path, top)
-    out_dict["path"] = util.forward_slash_path(os.path.splitext(
-        os.path.relpath(path, top))[0] + new_ext)
+    out_dict["path"] = route_path(ctx, util.forward_slash_path(os.path.splitext(
+        os.path.relpath(path, top))[0] + new_ext))
     out_dict["templatePath"] = template_path
     out_dict["date"] = localtime(os.path.getmtime(path))
     return out_dict

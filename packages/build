@@ -1,12 +1,17 @@
 #!/bin/bash
 
+
 # build all packages
 
+cd "$(dirname "$0")"
+rm -rf output
 mkdir output
 for dir in */ ; do
     if [ $dir != "output/" ]
-       then
-	   echo "building $dir"
-	   zip -r output/$(basename $dir).zip $dir
+    then
+	pushd $dir
+	echo "building $dir"
+	zip -r ../output/$(basename $dir).zip *
+	popd
     fi
 done
