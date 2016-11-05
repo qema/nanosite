@@ -6,7 +6,7 @@ setup(
     author_email = "azw7@cornell.edu",
     url = "https://github.com/qema/nanosite",
     description = "Speedy static site generator in Python.",
-    version = "0.1.9",
+    version = "0.1.10",
     packages = ["nanosite"],
     install_requires = ["markdown"],
     entry_points = {

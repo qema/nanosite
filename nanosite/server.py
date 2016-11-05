@@ -22,6 +22,7 @@ def update(top, ctx, handler, port):
             
         cur_max = 0
         for path, dirs, files in walk:
+            if "/." in path: continue # exclude hidden directories/files
             fs = [(os.path.join(path, f),
                    mtime_or_zero(os.path.join(path, f))) for f in files \
                   if list(filter(lambda x:
