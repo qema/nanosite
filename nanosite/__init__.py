@@ -7,15 +7,16 @@ import os
 import json
 import argparse
 
-def is_in_nanosite_dir(path="."):
+# get root dir of site, or None if no site exists
+def get_site_root_dir(path="."):
     if os.path.isfile(os.path.join(path, ".nanosite")):
-        return True
+        return path
     else:
-        up = os.path.join("..", path)
+        up = os.path.join(path, "..")
         if util.same_path(up, path):  # reached root
-            return False
+            return None
         else:
-            return is_in_nanosite_dir(up)
+            return get_site_root_dir(up)
 
 def get_cmdline_args():
     parser = argparse.ArgumentParser(prog="nanosite")
@@ -80,7 +81,7 @@ def main():
     action = args.action.lower()
     param = args.parameter
 
-    site_exists = is_in_nanosite_dir(args.site_dir)
+    args.site_dir = get_site_root_dir(args.site_dir)
 
     ctx = {"OutputDir": args.output_dir, "MetaDir": args.meta_dir}
     if action == "":
@@ -88,11 +89,11 @@ def main():
             packages.set_package_url(args.package_url, args.site_dir)
             print("Updated package URL.")
         else:
-            if site_exists:  # default action: run server
+            if args.site_dir is not None:  # default action: run server
                 server.run_server(args.port, args.site_dir, ctx)
             else:
                 setup_site_interactive(args.site_dir, ctx)
-    elif not site_exists:
+    elif args.site_dir is None:
         print("No site in this directory.")
     elif action == "build" or action == "b":
         build.make_site(args.site_dir, ctx)
