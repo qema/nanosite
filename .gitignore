@@ -1,4 +1,5 @@
 __pycache__/*
+nanosite/__pycache__/*
 nanosite.egg-info/*
 build/*
 dist/*
