@@ -6,7 +6,7 @@ For full documentation and a tutorial, check out nanosite's website: [nanosite](
 ## Example Sites
 - Personal portfolio: [wanganzhou.com](http://wanganzhou.com/).
 - Cornell Undergraduate Research Board: [curb.cornell.edu](http://curb.cornell.edu/).
-- [janezdu.github.io](http://janezdu.github.io)
+- Blog: [janezdu.github.io](http://janezdu.github.io).
 
 ## Features
 * Write your content in simple [Markdown](http://daringfireball.net/projects/markdown/) format, or templated HTML.
