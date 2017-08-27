@@ -3,7 +3,10 @@ nanosite is a static site generator in Python. It's designed to cut through all 
 
 For full documentation and a tutorial, check out nanosite's website: [nanosite](http://wanganzhou.com/nanosite).
 
-Here's a website made with nanosite: [wanganzhou.com](http://wanganzhou.com/).
+## Example Sites
+- Personal portfolio: [wanganzhou.com](http://wanganzhou.com/).
+- Cornell Undergraduate Research Board: [curb.cornell.edu](http://curb.cornell.edu/).
+- [janezdu.github.io](http://janezdu.github.io)
 
 ## Features
 * Write your content in simple [Markdown](http://daringfireball.net/projects/markdown/) format, or templated HTML.
